@@ -148,21 +148,13 @@ const Home = () => {
           <div className="flex items-center bg-white rounded-lg shadow-md px-4 py-3">
             <div className="bg-rose-100 p-2 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
               </svg>
             </div>
             <span className="ml-2 text-gray-700">
-              <strong className="text-rose-600">New!</strong> Melanoma Detection
+              Melanoma Detection
             </span>
-          </div>
-          
-          <div className="flex items-center bg-white rounded-lg shadow-md px-4 py-3">
-            <div className="bg-indigo-100 p-2 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span className="ml-2 text-gray-700">HIPAA-compliant security</span>
           </div>
         </div>
       </motion.div>
@@ -305,83 +297,6 @@ const Home = () => {
         </div>
       </motion.div>
 
-      {/* Melanoma Staging Information */}
-      <div className="my-20 max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Understanding Melanoma Stages
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Our advanced system can detect and categorize melanoma into clinical stages for comprehensive diagnosis
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-4 gap-6 mt-12">
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-indigo-100">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-700 font-bold text-lg mb-4">
-                1
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-blue-700">Stage 1</h3>
-              <p className="text-gray-600 mb-3">Early-stage melanoma confined to the skin. Highly treatable with surgery.</p>
-              <div className="text-sm text-blue-600 mt-2">
-                <span className="font-medium">Survival Rate:</span> 98-99% (5-year)
-              </div>
-            </div>
-            
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-indigo-100">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-700 font-bold text-lg mb-4">
-                2
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-blue-700">Stage 2</h3>
-              <p className="text-gray-600 mb-3">Deeper melanoma but still contained within the skin, no spread to lymph nodes.</p>
-              <div className="text-sm text-blue-600 mt-2">
-                <span className="font-medium">Survival Rate:</span> 70-95% (5-year)
-              </div>
-            </div>
-            
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-indigo-100">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 text-orange-700 font-bold text-lg mb-4">
-                3
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-orange-700">Stage 3</h3>
-              <p className="text-gray-600 mb-3">Melanoma has spread to nearby lymph nodes but not to distant organs.</p>
-              <div className="text-sm text-orange-600 mt-2">
-                <span className="font-medium">Survival Rate:</span> 45-78% (5-year)
-              </div>
-            </div>
-            
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-indigo-100">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-700 font-bold text-lg mb-4">
-                4
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-red-700">Stage 4</h3>
-              <p className="text-gray-600 mb-3">Advanced melanoma that has spread to distant organs such as lungs, liver, brain.</p>
-              <div className="text-sm text-red-600 mt-2">
-                <span className="font-medium">Survival Rate:</span> 15-20% (5-year)
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-10 bg-indigo-50 p-5 rounded-xl">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 mt-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="ml-3 text-indigo-800 text-sm">
-                <span className="font-semibold">Important:</span> This tool provides an initial assessment only and does not replace professional medical diagnosis. Always consult with a dermatologist or healthcare provider for proper diagnosis and treatment.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
       {/* Features Section */}
       <div className="mt-20">
         <motion.h2 
@@ -394,7 +309,7 @@ const Home = () => {
         </motion.h2>
         
         <motion.div 
-          className="grid md:grid-cols-3 gap-8"
+          className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -436,31 +351,6 @@ const Home = () => {
             <div className="mt-6 flex justify-center">
               <span className="inline-flex items-center text-sm font-medium text-purple-600">
                 View studies
-                <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </span>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
-            whileHover={{ scale: 1.03 }}
-          >
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-500 to-red-600"></div>
-            <div className="bg-gradient-to-br from-rose-50 to-rose-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
-              <span className="text-2xl font-bold text-rose-600">1-4</span>
-              <div className="absolute top-0 right-0 -mr-1 -mt-1 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                NEW
-              </div>
-            </div>
-            <h3 className="text-xl font-semibold mb-4 text-center text-indigo-900">Melanoma Staging</h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              Advanced detection with precise melanoma staging (Stages 1-4) to guide appropriate treatment paths and urgency
-            </p>
-            <div className="mt-6 flex justify-center">
-              <span className="inline-flex items-center text-sm font-medium text-rose-600">
-                Learn about staging
                 <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                 </svg>
