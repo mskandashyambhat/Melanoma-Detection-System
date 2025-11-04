@@ -90,7 +90,7 @@ const Results = () => {
   if (!result) {
     return (
       <div className="container mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[40vh]">
-        <div className="spinner mx-auto border-indigo-600 border-t-transparent"></div>
+        <div className="spinner mx-auto border-blue-700 border-t-transparent"></div>
         <p className="mt-4 text-gray-600 font-medium">Loading analysis results...</p>
       </div>
     );
@@ -103,7 +103,7 @@ const Results = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-slate-700 to-blue-700 bg-clip-text text-transparent">
           Analysis Results
         </h1>
 
@@ -113,7 +113,7 @@ const Results = () => {
             {/* Image Display */}
             <div className="card md:col-span-2 bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
               <h3 className="text-xl font-semibold mb-4 flex items-center">
-                <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 mr-2"></span>
+                <span className="inline-block w-2 h-2 rounded-full bg-blue-700 mr-2"></span>
                 Analyzed Image
               </h3>
               
@@ -142,46 +142,19 @@ const Results = () => {
             {/* Detection Results */}
             <div className="card md:col-span-3 bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
               <h3 className="text-xl font-semibold mb-4 flex items-center">
-                <span className="inline-block w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+                <span className="inline-block w-2 h-2 rounded-full bg-slate-600 mr-2"></span>
                 Detection Results
               </h3>
               
               <div className="space-y-6">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Detected Condition</label>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mt-1">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-blue-700 bg-clip-text text-transparent mt-1">
                     {result.disease}
                   </p>
                 </div>
                 
-                {/* Display Melanoma Stage when applicable */}
-                {result.disease && result.disease.startsWith('Melanoma Stage') && (
-                  <div className="mt-1">
-                    <div className="flex items-center gap-2">
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-                        result.melanoma_stage >= 3 ? 
-                        'bg-red-100 text-red-800 border border-red-200' : 
-                        'bg-orange-100 text-orange-800 border border-orange-200'
-                      }`}>
-                        <FaExclamationTriangle className="mr-1" />
-                        Stage {result.melanoma_stage}
-                      </div>
-                      <span className="text-gray-500 text-sm">
-                        {result.melanoma_stage >= 3 ? 
-                          'Advanced Stage' : 
-                          'Early to Mid Stage'}
-                      </span>
-                    </div>
-                    <div className="mt-3 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-sm text-gray-700">
-                        {result.melanoma_stage === 1 && 'Early-stage melanoma confined to the skin. Very treatable with high survival rates when addressed promptly.'}
-                        {result.melanoma_stage === 2 && 'Melanoma has penetrated deeper into the skin but has not spread to lymph nodes. Requires immediate treatment.'}
-                        {result.melanoma_stage === 3 && 'Melanoma has spread to nearby lymph nodes. Requires comprehensive treatment with oncology team.'}
-                        {result.melanoma_stage === 4 && 'Advanced melanoma that has spread to distant organs. Requires immediate and intensive treatment.'}
-                      </p>
-                    </div>
-                  </div>
-                )}
+
 
                 <div>
                   <label className="text-sm font-medium text-gray-500">Confidence Level</label>
@@ -191,10 +164,10 @@ const Results = () => {
                         initial={{ width: 0 }}
                         animate={{ width: `${result.confidence}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-4 rounded-full"
+                        className="bg-gradient-to-r from-slate-600 to-blue-700 h-4 rounded-full"
                       ></motion.div>
                     </div>
-                    <span className="text-xl font-bold text-indigo-600">{result.confidence}%</span>
+                    <span className="text-xl font-bold text-blue-700">{result.confidence}%</span>
                   </div>
                 </div>
 
@@ -234,7 +207,7 @@ const Results = () => {
             
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
               <div className="flex items-center mb-3">
-                <svg className="w-6 h-6 text-indigo-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-blue-700 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p className="text-gray-700 font-medium">Based on the analysis, we recommend the following steps:</p>
@@ -243,8 +216,8 @@ const Results = () => {
             
             <ul className="grid md:grid-cols-2 gap-4">
               {result.recommendations.map((rec, index) => (
-                <li key={index} className="flex items-start bg-white border border-gray-100 rounded-lg p-4 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors">
-                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 shadow-sm">
+                <li key={index} className="flex items-start bg-white border border-gray-100 rounded-lg p-4 hover:border-blue-100 hover:bg-blue-50/30 transition-colors">
+                  <div className="bg-gradient-to-r from-slate-600 to-blue-700 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 shadow-sm">
                     {index + 1}
                   </div>
                   <span className="text-gray-700">{rec}</span>

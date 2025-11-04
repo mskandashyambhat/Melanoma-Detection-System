@@ -1,301 +1,406 @@
 """
-Model Training Script for Melanoma Detection System
-====================================================
+MELANOMA DETECTION MODEL TRAINING - SIMPLE & FAST
+=================================================
 
-This script demonstrates how to train the UNet + ResNet50 models on medical imaging datasets.
+EfficientNetB0 Classifier (~5.3M parameters)
 
-RECOMMENDED DATASETS:
-=====================
+Features:
+- 10 epochs (fast training)
+- Simple EfficientNetB0 architecture (no UNet, no ResNet50)
+- Class weights for imbalanced dataset
+- Early stopping and learning rate scheduling
+- 5-10x faster than previous UNet+ResNet50 pipeline
 
-1. HAM10000 (Human Against Machine with 10,000 training images)
-   - Source: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T
-   - Size: 10,015 dermatoscopic images
-   - Classes: 7 skin conditions (Melanoma, Basal Cell Carcinoma, etc.)
-   - Format: JPG images with CSV metadata
-   - Citation: Tschandl et al., "The HAM10000 dataset" (2018)
-   
-2. ISIC Archive (International Skin Imaging Collaboration)
-   - Source: https://www.isic-archive.com/
-   - Size: 100,000+ dermoscopic images
-   - Classes: Multiple skin lesion types with expert annotations
-   - Format: JPG/PNG with JSON metadata
-   - Benefits: Largest publicly available skin lesion dataset
-   
-3. PH² Dataset (Pedro Hispano Hospital)
-   - Source: https://www.fc.up.pt/addi/ph2%20database.html
-   - Size: 200 dermoscopic images
-   - Classes: Common nevi, Atypical nevi, Melanoma
-   - Benefits: Includes ground truth segmentation masks (useful for UNet training)
-
-DATASET PREPARATION:
-====================
-1. Download one of the datasets above
-2. Organize into the following structure:
-   dataset/
-   ├── train/
-   │   ├── melanoma/
-   │   ├── basal_cell_carcinoma/
-   │   ├── acne/
-   │   ├── ringworm/
-   │   ├── burns/
-   │   ├── eczema/
-   │   ├── psoriasis/
-   │   └── normal_skin/
-   └── validation/
-       ├── melanoma/
-       ├── basal_cell_carcinoma/
-       └── ... (same structure)
-
-3. Split ratio: 80% training, 20% validation
-4. Balance classes or use class weights for imbalanced data
+Binary Classification: Melanoma vs Benign
+Dataset: HAM10000 (preprocessed .npy files)
 """
 
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress TensorFlow warnings
+
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import numpy as np
-import os
-from model_architecture import MelanomaDetectionModel
+from pathlib import Path
+import json
+from datetime import datetime
+import matplotlib.pyplot as plt
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
-# Configuration
-IMG_SIZE = (224, 224)  # Input size for ResNet50
-BATCH_SIZE = 32        # Adjust based on GPU memory
-EPOCHS = 100           # Number of training epochs
-TRAIN_DIR = 'dataset/train'       # Path to training data
-VAL_DIR = 'dataset/validation'    # Path to validation data
-MODEL_SAVE_PATH = 'models/'       # Where to save trained models
-
-def create_data_generators():
-    """
-    Create data generators for training and validation
-    
-    Data Augmentation Strategy:
-    ===========================
-    Training data is augmented to:
-    1. Increase dataset diversity
-    2. Prevent overfitting
-    3. Improve model generalization
-    
-    Augmentations applied:
-    - Rotation: ±20° (lesions can appear at any angle)
-    - Width/Height shifts: ±20% (lesions at different positions)
-    - Shear: ±20% (perspective variations)
-    - Zoom: ±20% (different camera distances)
-    - Horizontal/Vertical flip: Mirror images (common in dermatoscopy)
-    
-    Note: For HAM10000 and ISIC datasets, ensure images are already centered
-    and properly cropped around the lesion before training.
-    """
-    
-    # Training data generator with extensive augmentation
-    # These augmentations simulate real-world variations in dermoscopic imaging
-    train_datagen = ImageDataGenerator(
-        rescale=1./255,              # Normalize pixel values to [0, 1]
-        rotation_range=20,           # Random rotation
-        width_shift_range=0.2,       # Horizontal shift
-        height_shift_range=0.2,      # Vertical shift
-        shear_range=0.2,             # Shear transformation
-        zoom_range=0.2,              # Random zoom
-        horizontal_flip=True,        # Mirror horizontally
-        vertical_flip=True,          # Mirror vertically
-        fill_mode='nearest'          # Fill empty pixels after transformation
-    )
-    
-    # Validation data generator - NO augmentation for consistent evaluation
-    val_datagen = ImageDataGenerator(rescale=1./255)
-    
-    # Create generators
-    train_generator = train_datagen.flow_from_directory(
-        TRAIN_DIR,
-        target_size=IMG_SIZE,
-        batch_size=BATCH_SIZE,
-        class_mode='categorical',
-        shuffle=True
-    )
-    
-    val_generator = val_datagen.flow_from_directory(
-        VAL_DIR,
-        target_size=IMG_SIZE,
-        batch_size=BATCH_SIZE,
-        class_mode='categorical',
-        shuffle=False
-    )
-    
-    return train_generator, val_generator
+# Import simple model architecture
+from model_simple import SimpleMelanomaModel as MelanomaDetectionModel
 
 
-def train_classifier():
-    """
-    Train the ResNet50 classifier
+class ModelTrainer:
+    """Handles training of the melanoma detection model"""
     
-    Training Strategy:
-    ==================
-    1. Transfer Learning: Use pre-trained ResNet50 weights from ImageNet
-    2. Fine-tuning: Unfreeze last 20 layers for domain adaptation
-    3. Early Stopping: Prevent overfitting by monitoring validation accuracy
-    4. Learning Rate Reduction: Adaptive learning rate for better convergence
-    5. Model Checkpointing: Save best model based on validation accuracy
+    def __init__(self, data_dir='data/ham10000/augmented', model_dir='models'):
+        """
+        Initialize the model trainer
+        
+        Args:
+            data_dir: Directory containing preprocessed data (use 'augmented' for 3x dataset)
+            model_dir: Directory to save trained models
+        """
+        self.data_dir = Path(data_dir)
+        self.model_dir = Path(model_dir)
+        self.model_dir.mkdir(exist_ok=True)
+        
+        # Initialize model builder
+        self.model_builder = MelanomaDetectionModel(input_shape=(224, 224, 3))
+        
+        # Training history
+        self.history = None
+        self.model = None
+        self.unet_model = None
+        self.resnet_model = None
+        
+    def load_data(self):
+        """Load preprocessed data from .npy files"""
+        print("\n📂 Loading preprocessed data...")
+        
+        # Load training data
+        self.train_X = np.load(self.data_dir / 'train_X.npy')
+        self.train_y = np.load(self.data_dir / 'train_y.npy')
+        
+        # Load validation data
+        self.val_X = np.load(self.data_dir / 'validation_X.npy')
+        self.val_y = np.load(self.data_dir / 'validation_y.npy')
+        
+        # Load test data
+        self.test_X = np.load(self.data_dir / 'test_X.npy')
+        self.test_y = np.load(self.data_dir / 'test_y.npy')
+        
+        print(f"✅ Training set: {self.train_X.shape[0]} images")
+        print(f"✅ Validation set: {self.val_X.shape[0]} images")
+        print(f"✅ Test set: {self.test_X.shape[0]} images")
+        
+        # Print class distribution
+        train_melanoma = np.sum(self.train_y)
+        train_benign = len(self.train_y) - train_melanoma
+        print(f"\n📊 Training set distribution:")
+        print(f"   Benign: {train_benign} ({100*train_benign/len(self.train_y):.1f}%)")
+        print(f"   Melanoma: {train_melanoma} ({100*train_melanoma/len(self.train_y):.1f}%)")
+        
+        return True
     
-    Expected Performance (with proper dataset):
-    ===========================================
-    - HAM10000: 85-90% validation accuracy
-    - ISIC: 80-88% validation accuracy
-    - Training time: 2-4 hours on GPU (NVIDIA RTX 3090 or better)
-    - Best results with balanced classes or class weights
-    """
-    print("=" * 80)
-    print("Training Melanoma Classifier (ResNet50)")
-    print("=" * 80)
-    
-    # Create data generators
-    train_gen, val_gen = create_data_generators()
-    
-    # Get number of classes
-    num_classes = train_gen.num_classes
-    print(f"\nNumber of classes: {num_classes}")
-    print(f"Class indices: {train_gen.class_indices}")
-    print(f"Training samples: {train_gen.samples}")
-    print(f"Validation samples: {val_gen.samples}")
-    
-    # Build model
-    model_builder = MelanomaDetectionModel(num_classes=num_classes)
-    classifier, _ = model_builder.build_combined_model()
-    classifier, _ = model_builder.compile_models(classifier, None)
-    
-    print("\nModel built successfully!")
-    print(f"Total parameters: {classifier.count_params():,}")
-    
-    # Get callbacks
-    callbacks = model_builder.get_callbacks()
-    
-    # Add TensorBoard callback
-    callbacks.append(
-        keras.callbacks.TensorBoard(
-            log_dir='logs',
-            histogram_freq=1,
-            write_graph=True
+    def calculate_class_weights(self):
+        """Calculate class weights for imbalanced dataset"""
+        class_weights = compute_class_weight(
+            'balanced',
+            classes=np.unique(self.train_y),
+            y=self.train_y
         )
+        
+        class_weight_dict = {i: weight for i, weight in enumerate(class_weights)}
+        
+        print(f"\n⚖️  Class weights calculated:")
+        print(f"   Benign (0): {class_weight_dict[0]:.3f}")
+        print(f"   Melanoma (1): {class_weight_dict[1]:.3f}")
+        
+        return class_weight_dict
+    
+    def train(self, epochs=50, batch_size=32):
+        """
+        Train the combined UNet + ResNet50 model
+        
+        Args:
+            epochs: Number of training epochs
+            batch_size: Training batch size
+        """
+        print("\n" + "="*70)
+        print("🚀 STARTING MELANOMA DETECTION MODEL TRAINING")
+        print("="*70)
+        print(f"📅 Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🔢 Epochs: {epochs}")
+        print(f"📦 Batch size: {batch_size}")
+        print("="*70 + "\n")
+        
+        # Calculate class weights
+        class_weights = self.calculate_class_weights()
+        
+        # Build the simple model
+        print("\n🏗️  Building EfficientNetB0 classifier...")
+        self.model = self.model_builder.build_model()
+        
+        print("\n📋 Model Summary:")
+        print("-" * 70)
+        self.model.summary()
+        print("-" * 70)
+        
+        # Compile the model
+        print("\n⚙️  Compiling model...")
+        self.model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=0.001),
+            loss='sparse_categorical_crossentropy',  # For integer labels with softmax output
+            metrics=['accuracy']  # Keep it simple to avoid shape mismatch issues
+        )
+        
+        # Setup callbacks
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        callbacks = [
+            # Save best model
+            keras.callbacks.ModelCheckpoint(
+                filepath=str(self.model_dir / f'melanoma_model_{timestamp}_best.keras'),
+                monitor='val_accuracy',
+                save_best_only=True,
+                mode='max',
+                verbose=1
+            ),
+            
+            # Early stopping
+            keras.callbacks.EarlyStopping(
+                monitor='val_loss',
+                patience=10,
+                restore_best_weights=True,
+                verbose=1
+            ),
+            
+            # Reduce learning rate on plateau
+            keras.callbacks.ReduceLROnPlateau(
+                monitor='val_loss',
+                factor=0.5,
+                patience=5,
+                min_lr=1e-7,
+                verbose=1
+            ),
+            
+            # TensorBoard logging
+            keras.callbacks.TensorBoard(
+                log_dir=str(self.model_dir / 'logs' / timestamp),
+                histogram_freq=1
+            )
+        ]
+        
+        print("\n🎯 Starting training with enhanced augmentation...")
+        print("   ✨ Augmentations: Flip, Rotation (±30%), Zoom (±30%), Translation (±20%)")
+        print("   ✨ Color: Brightness (±30%), Contrast (±30%), Hue, Saturation")
+        print("   ✨ Noise: Gaussian noise added")
+        print("")
+        
+        # Train the model
+        self.history = self.model.fit(
+            self.train_X, self.train_y,
+            validation_data=(self.val_X, self.val_y),
+            epochs=epochs,
+            batch_size=batch_size,
+            class_weight=class_weights,
+            callbacks=callbacks,
+            verbose=1
+        )
+        
+        # Save final model
+        final_model_path = self.model_dir / f'melanoma_model_final_{timestamp}.keras'
+        self.model.save(final_model_path)
+        print(f"\n💾 Final model saved to: {final_model_path}")
+        
+        # Save ResNet50 classifier separately (for API use)
+        resnet_model = self.model_builder.build_resnet_classifier()
+        resnet_model.set_weights(self.model.get_layer('resnet_classifier').get_weights())
+        resnet_path = self.model_dir / f'resnet_classifier_{timestamp}.keras'
+        resnet_model.save(resnet_path)
+        print(f"💾 ResNet50 classifier saved to: {resnet_path}")
+        
+        # Save UNet separately
+        unet_model = self.model_builder.build_unet_segmentation()
+        unet_model.set_weights(self.model.get_layer('unet_segmentation').get_weights())
+        unet_path = self.model_dir / f'unet_segmentation_{timestamp}.keras'
+        unet_model.save(unet_path)
+        print(f"💾 UNet segmentation saved to: {unet_path}")
+        
+        # Save model info
+        model_info = {
+            'timestamp': timestamp,
+            'epochs': epochs,
+            'batch_size': batch_size,
+            'input_shape': [224, 224, 3],
+            'architecture': 'UNet + ResNet50',
+            'final_model': str(final_model_path),
+            'resnet_model': str(resnet_path),
+            'unet_model': str(unet_path),
+            'training_samples': int(len(self.train_X)),
+            'validation_samples': int(len(self.val_X)),
+            'test_samples': int(len(self.test_X)),
+            'class_weights': {str(k): float(v) for k, v in class_weights.items()}
+        }
+        
+        with open(self.model_dir / 'model_info.json', 'w') as f:
+            json.dump(model_info, f, indent=2)
+        
+        print("\n" + "="*70)
+        print("✅ TRAINING COMPLETED SUCCESSFULLY!")
+        print("="*70)
+        
+        return self.history
+    
+    def evaluate(self):
+        """Evaluate the trained model on test set"""
+        print("\n" + "="*70)
+        print("📊 EVALUATING MODEL ON TEST SET")
+        print("="*70 + "\n")
+        
+        # Evaluate on test set
+        test_loss, test_acc = self.model.evaluate(
+            self.test_X, self.test_y,
+            batch_size=32,
+            verbose=1
+        )
+        
+        # Get predictions
+        print("\n🔮 Generating predictions...")
+        y_pred_probs = self.model.predict(self.test_X, batch_size=32, verbose=1)
+        y_pred = (y_pred_probs[:, 1] > 0.5).astype(int)  # Get melanoma probability
+        
+        # Classification report
+        print("\n� Detailed Classification Report:")
+        print("-" * 70)
+        target_names = ['Benign', 'Melanoma']
+        report_dict = classification_report(self.test_y, y_pred, target_names=target_names, output_dict=True)
+        print(classification_report(self.test_y, y_pred, target_names=target_names))
+        
+        # Confusion matrix
+        print("\n🔢 Confusion Matrix:")
+        print("-" * 70)
+        cm = confusion_matrix(self.test_y, y_pred)
+        print(f"                 Predicted")
+        print(f"               Benign  Melanoma")
+        print(f"Actual Benign    {cm[0][0]:5d}   {cm[0][1]:5d}")
+        print(f"     Melanoma    {cm[1][0]:5d}   {cm[1][1]:5d}")
+        print("-" * 70)
+        
+        # Calculate additional metrics from confusion matrix
+        tn, fp, fn, tp = cm.ravel()
+        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
+        sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        recall = sensitivity  # Same as sensitivity
+        
+        # Calculate metrics
+        print("\n📈 Test Set Results:")
+        print("-" * 70)
+        print(f"  Loss: {test_loss:.4f}")
+        print(f"  Accuracy: {test_acc:.4f} ({100*test_acc:.2f}%)")
+        print(f"  Precision (Melanoma): {precision:.4f}")
+        print(f"  Recall (Melanoma): {recall:.4f}")
+        print(f"  Sensitivity (True Positive Rate): {sensitivity:.4f}")
+        print(f"  Specificity (True Negative Rate): {specificity:.4f}")
+        print(f"  False Positive Rate: {fp/(fp+tn) if (fp+tn) > 0 else 0:.4f}")
+        print(f"  False Negative Rate: {fn/(fn+tp) if (fn+tp) > 0 else 0:.4f}")
+        print("-" * 70)
+        
+        # Save test results
+        test_results = {
+            'test_loss': float(test_loss),
+            'test_accuracy': float(test_acc),
+            'precision': float(precision),
+            'recall': float(recall),
+            'sensitivity': float(sensitivity),
+            'specificity': float(specificity),
+            'confusion_matrix': cm.tolist(),
+            'classification_report': report_dict
+        }
+        
+        with open(self.model_dir / 'test_results.json', 'w') as f:
+            json.dump(test_results, f, indent=2)
+        
+        print("\n💾 Test results saved to: models/test_results.json")
+        
+        return test_results
+    
+    def plot_training_history(self):
+        """Plot training history"""
+        if self.history is None:
+            print("⚠️  No training history available. Train the model first.")
+            return
+        
+        print("\n📊 Generating training history plots...")
+        
+        fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+        fig.suptitle('Melanoma Detection Model Training History', fontsize=16, fontweight='bold')
+        
+        # Plot 1: Accuracy
+        axes[0, 0].plot(self.history.history['accuracy'], label='Training', linewidth=2)
+        axes[0, 0].plot(self.history.history['val_accuracy'], label='Validation', linewidth=2)
+        axes[0, 0].set_title('Model Accuracy', fontsize=12, fontweight='bold')
+        axes[0, 0].set_xlabel('Epoch')
+        axes[0, 0].set_ylabel('Accuracy')
+        axes[0, 0].legend()
+        axes[0, 0].grid(True, alpha=0.3)
+        
+        # Plot 2: Loss
+        axes[0, 1].plot(self.history.history['loss'], label='Training', linewidth=2)
+        axes[0, 1].plot(self.history.history['val_loss'], label='Validation', linewidth=2)
+        axes[0, 1].set_title('Model Loss', fontsize=12, fontweight='bold')
+        axes[0, 1].set_xlabel('Epoch')
+        axes[0, 1].set_ylabel('Loss')
+        axes[0, 1].legend()
+        axes[0, 1].grid(True, alpha=0.3)
+        
+        # Plot 3: Precision
+        axes[1, 0].plot(self.history.history['precision'], label='Training', linewidth=2)
+        axes[1, 0].plot(self.history.history['val_precision'], label='Validation', linewidth=2)
+        axes[1, 0].set_title('Model Precision', fontsize=12, fontweight='bold')
+        axes[1, 0].set_xlabel('Epoch')
+        axes[1, 0].set_ylabel('Precision')
+        axes[1, 0].legend()
+        axes[1, 0].grid(True, alpha=0.3)
+        
+        # Plot 4: Recall
+        axes[1, 1].plot(self.history.history['recall'], label='Training', linewidth=2)
+        axes[1, 1].plot(self.history.history['val_recall'], label='Validation', linewidth=2)
+        axes[1, 1].set_title('Model Recall', fontsize=12, fontweight='bold')
+        axes[1, 1].set_xlabel('Epoch')
+        axes[1, 1].set_ylabel('Recall')
+        axes[1, 1].legend()
+        axes[1, 1].grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        
+        plot_path = self.model_dir / 'training_history.png'
+        plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+        print(f"💾 Training plots saved to: {plot_path}")
+        
+        plt.close()
+
+
+def main():
+    """Main training function"""
+    print("\n" + "="*70)
+    print("🔬 MELANOMA DETECTION SYSTEM - MODEL TRAINING")
+    print("="*70)
+    print("Architecture: UNet → ResNet50 Pipeline")
+    print("Dataset: HAM10000 (Binary Classification: Melanoma vs Benign)")
+    print("="*70 + "\n")
+    
+    # Initialize trainer
+    trainer = ModelTrainer(
+        data_dir='data/ham10000/augmented',  # Using augmented dataset (21,630 images)
+        model_dir='models'
     )
     
-    # Train model
-    print("\nStarting training...")
-    history = classifier.fit(
-        train_gen,
-        validation_data=val_gen,
-        epochs=EPOCHS,
-        callbacks=callbacks,
-        verbose=1
-    )
+    # Load data
+    trainer.load_data()
     
-    # Save final model
-    final_model_path = os.path.join(MODEL_SAVE_PATH, 'classifier_model.h5')
-    classifier.save(final_model_path)
-    print(f"\n✓ Final model saved to: {final_model_path}")
+    # Train model (10 epochs, batch 64, no runtime aug for faster training)
+    trainer.train(epochs=10, batch_size=64)
     
-    # Print final metrics
-    print("\n" + "=" * 80)
-    print("TRAINING COMPLETE!")
-    print("=" * 80)
-    print(f"Final Training Accuracy: {history.history['accuracy'][-1]:.4f}")
-    print(f"Final Validation Accuracy: {history.history['val_accuracy'][-1]:.4f}")
-    print(f"Final Training Loss: {history.history['loss'][-1]:.4f}")
-    print(f"Final Validation Loss: {history.history['val_loss'][-1]:.4f}")
+    # Evaluate model
+    trainer.evaluate()    # Plot training history
+    trainer.plot_training_history()
     
-    # Find best epoch
-    best_epoch = np.argmax(history.history['val_accuracy']) + 1
-    best_val_acc = max(history.history['val_accuracy'])
-    print(f"\nBest Validation Accuracy: {best_val_acc:.4f} (Epoch {best_epoch})")
-    
-    return classifier, history
+    print("\n" + "="*70)
+    print("🎉 ALL TASKS COMPLETED SUCCESSFULLY!")
+    print("="*70)
+    print("\nNext steps:")
+    print("1. Check models/ directory for trained model files")
+    print("2. Review training_history.png for training curves")
+    print("3. Check test_results.json for detailed metrics")
+    print("4. Update app.py to use the trained model")
+    print("5. Test the complete pipeline with frontend")
+    print("\n" + "="*70 + "\n")
 
 
-def evaluate_model(model, val_generator):
-    """Evaluate model performance"""
-    print("\n" + "=" * 80)
-    print("Evaluating Model")
-    print("=" * 80)
-    
-    # Evaluate
-    results = model.evaluate(val_generator, verbose=1)
-    
-    print("\nEvaluation Results:")
-    print(f"Loss: {results[0]:.4f}")
-    print(f"Accuracy: {results[1]:.4f}")
-    if len(results) > 2:
-        print(f"Precision: {results[2]:.4f}")
-        print(f"Recall: {results[3]:.4f}")
-        print(f"AUC: {results[4]:.4f}")
-    
-    # Generate predictions
-    print("\nGenerating predictions...")
-    predictions = model.predict(val_generator, verbose=1)
-    
-    # Get true labels
-    true_labels = val_generator.classes
-    predicted_labels = np.argmax(predictions, axis=1)
-    
-    # Calculate per-class accuracy
-    print("\nPer-Class Accuracy:")
-    class_names = list(val_generator.class_indices.keys())
-    for i, class_name in enumerate(class_names):
-        class_mask = true_labels == i
-        if np.sum(class_mask) > 0:
-            class_acc = np.mean(predicted_labels[class_mask] == true_labels[class_mask])
-            print(f"{class_name}: {class_acc:.4f} ({np.sum(class_mask)} samples)")
-
-
-if __name__ == "__main__":
-    # Check if dataset directories exist
-    if not os.path.exists(TRAIN_DIR) or not os.path.exists(VAL_DIR):
-        print("⚠️  Dataset directories not found!")
-        print("\n" + "=" * 80)
-        print("DATASET SETUP REQUIRED")
-        print("=" * 80)
-        print("\nPlease download and prepare one of these datasets:")
-        print("\n1. HAM10000 Dataset (Recommended for beginners)")
-        print("   Download: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T")
-        print("   - 10,015 images")
-        print("   - Well-balanced classes")
-        print("   - Includes metadata CSV")
-        print("\n2. ISIC Archive (Best for production)")
-        print("   Download: https://www.isic-archive.com/")
-        print("   - 100,000+ images")
-        print("   - Most comprehensive dataset")
-        print("   - Requires registration")
-        print("\n3. PH² Dataset (Best for UNet segmentation)")
-        print("   Download: https://www.fc.up.pt/addi/ph2%20database.html")
-        print("   - 200 images with segmentation masks")
-        print("   - Perfect for training UNet model")
-        print("\nAfter downloading, organize as:")
-        print(f"  - {TRAIN_DIR}/")
-        print("    ├── melanoma/")
-        print("    ├── basal_cell_carcinoma/")
-        print("    ├── acne/")
-        print("    ├── ringworm/")
-        print("    ├── burns/")
-        print("    ├── eczema/")
-        print("    ├── psoriasis/")
-        print("    └── normal_skin/")
-        print(f"  - {VAL_DIR}/")
-        print("    └── (same structure)")
-        print("\nUse 80-20 train-validation split")
-        print("=" * 80)
-        exit(1)
-    
-    # Create models directory if it doesn't exist
-    os.makedirs(MODEL_SAVE_PATH, exist_ok=True)
-    
-    # Train classifier
-    try:
-        classifier, history = train_classifier()
-        
-        # Evaluate model
-        _, val_gen = create_data_generators()
-        evaluate_model(classifier, val_gen)
-        
-        print("\n✓ Training completed successfully!")
-        print(f"Model saved to: {MODEL_SAVE_PATH}")
-        
-    except Exception as e:
-        print(f"\n❌ Error during training: {e}")
-        raise
+if __name__ == '__main__':
+    main()

@@ -32,7 +32,7 @@ const Header = () => {
   const navLinkVariants = {
     initial: { y: -5, opacity: 0 },
     animate: { y: 0, opacity: 1 },
-    hover: { scale: 1.05, color: '#4F46E5' }
+    hover: { scale: 1.05, color: '#1d4ed8' }
   };
   
   // Active link determination
@@ -48,14 +48,14 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 group">
             <motion.div 
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 p-2 rounded-lg"
+              className="bg-gradient-to-r from-slate-700 to-blue-800 p-2 rounded-lg"
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ type: "spring", stiffness: 400 }}
             >
               <FaHeartbeat className="text-white text-3xl" />
             </motion.div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-blue-800 bg-clip-text text-transparent">
                 Melanoma Detection System
               </h1>
               <p className="text-sm text-gray-600">Medical Diagnostics</p>
@@ -66,7 +66,7 @@ const Header = () => {
           <div className="md:hidden">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-gray-600 hover:text-indigo-600 focus:outline-none transition"
+              className="text-gray-600 hover:text-blue-700 focus:outline-none transition"
             >
               {mobileMenuOpen ? 
                 <FaTimes className="h-6 w-6" /> : 
@@ -86,7 +86,7 @@ const Header = () => {
               <Link 
                 to="/"
                 className={`flex items-center space-x-1 px-3 py-2 rounded-md transition ${
-                  isActive('/') ? 'text-indigo-600 font-medium bg-indigo-50' : 'text-gray-700 hover:text-indigo-600'
+                  isActive('/') ? 'text-blue-700 font-medium bg-blue-50' : 'text-gray-700 hover:text-blue-700'
                 }`}
               >
                 <MdHome className="text-lg" />
@@ -103,7 +103,7 @@ const Header = () => {
               <Link 
                 to="/results"
                 className={`flex items-center space-x-1 px-3 py-2 rounded-md transition ${
-                  isActive('/results') ? 'text-indigo-600 font-medium bg-indigo-50' : 'text-gray-700 hover:text-indigo-600'
+                  isActive('/results') ? 'text-blue-700 font-medium bg-blue-50' : 'text-gray-700 hover:text-blue-700'
                 }`}
               >
                 <MdDashboard className="text-lg" />
@@ -120,7 +120,7 @@ const Header = () => {
               <Link 
                 to="/doctors"
                 className={`flex items-center space-x-1 px-3 py-2 rounded-md transition ${
-                  isActive('/doctors') ? 'text-indigo-600 font-medium bg-indigo-50' : 'text-gray-700 hover:text-indigo-600'
+                  isActive('/doctors') ? 'text-blue-700 font-medium bg-blue-50' : 'text-gray-700 hover:text-blue-700'
                 }`}
               >
                 <FaStethoscope className="text-lg" />
@@ -142,7 +142,7 @@ const Header = () => {
             <Link 
               to="/"
               className={`flex items-center space-x-2 py-3 px-4 rounded-md ${
-                isActive('/') ? 'text-indigo-600 font-medium bg-indigo-50' : 'text-gray-700'
+                isActive('/') ? 'text-blue-700 font-medium bg-blue-50' : 'text-gray-700'
               }`}
             >
               <MdHome className="text-lg" />
@@ -151,7 +151,7 @@ const Header = () => {
             <Link 
               to="/results"
               className={`flex items-center space-x-2 py-3 px-4 rounded-md ${
-                isActive('/results') ? 'text-indigo-600 font-medium bg-indigo-50' : 'text-gray-700'
+                isActive('/results') ? 'text-blue-700 font-medium bg-blue-50' : 'text-gray-700'
               }`}
             >
               <MdDashboard className="text-lg" />
@@ -160,7 +160,7 @@ const Header = () => {
             <Link 
               to="/doctors"
               className={`flex items-center space-x-2 py-3 px-4 rounded-md ${
-                isActive('/doctors') ? 'text-indigo-600 font-medium bg-indigo-50' : 'text-gray-700'
+                isActive('/doctors') ? 'text-blue-700 font-medium bg-blue-50' : 'text-gray-700'
               }`}
             >
               <FaStethoscope className="text-lg" />

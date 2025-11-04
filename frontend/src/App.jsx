@@ -36,7 +36,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
         {APP_CONFIG.SHOW_DEMO_BANNER && (
           <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-center py-2 px-4 shadow-md">
             <strong>Demo Mode:</strong> Running with simulated data. Backend features are limited on GitHub Pages.

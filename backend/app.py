@@ -50,66 +50,46 @@ os.makedirs(REPORTS_FOLDER, exist_ok=True)
 # Load models (will be loaded once on startup)
 classifier_model = None
 segmentation_model = None
-# Binary classification: Melanoma or Not Melanoma
-class_names = [
-    'Melanoma', 'Not Melanoma'
-]
 
-# Disease descriptions and recommendations - ONLY Melanoma Stages and Not Melanoma
+# Binary classification: Melanoma vs Benign
+class_names = ['Benign', 'Melanoma']
+
+# Disease descriptions and recommendations - Binary Classification
 disease_info = {
-    'Melanoma Stage 1': {
-        'description': 'Early-stage melanoma confined to the skin, typically ≤1mm thick with no ulceration. Highly treatable with good prognosis.',
-        'severity': 'Moderate',
-        'stage': 1,
-        'recommendations': [
-            'Schedule surgical removal (wide excision) within next 2 weeks',
-            'Sentinel lymph node biopsy may be recommended',
-            'Regular skin checks every 3-6 months for the next 2 years',
-            'Daily sun protection with SPF 50+ sunscreen'
-        ]
-    },
-    'Melanoma Stage 2': {
-        'description': 'Intermediate melanoma, typically thicker (>1mm) and/or with ulceration, but still confined to the skin with no spread.',
+    'Melanoma': {
+        'description': 'Melanoma detected. This is a serious form of skin cancer that requires immediate medical attention. Early detection and treatment are crucial for positive outcomes.',
         'severity': 'High',
-        'stage': 2,
         'recommendations': [
-            'Immediate surgical removal with wider margins',
-            'Sentinel lymph node biopsy strongly recommended',
-            'Consider adjuvant therapy options',
-            'Regular imaging and follow-ups every 3 months'
+            '⚠️ URGENT: Schedule appointment with dermatologist within 1-2 days',
+            'Avoid sun exposure and use SPF 50+ sunscreen',
+            'Take photos to track any changes',
+            'Prepare list of questions for your doctor consultation',
+            'Do not attempt self-treatment',
+            'Bring this report to your medical appointment'
+        ],
+        'next_steps': [
+            'Professional biopsy for confirmation',
+            'Dermoscopic examination by specialist',
+            'Possible imaging tests to check spread',
+            'Discussion of treatment options if confirmed'
         ]
     },
-    'Melanoma Stage 3': {
-        'description': 'Advanced melanoma that has spread to nearby lymph nodes but not to distant sites. Requires aggressive treatment.',
-        'severity': 'Very High',
-        'stage': 3,
-        'recommendations': [
-            'Urgent surgical removal of primary tumor and affected lymph nodes',
-            'Immunotherapy and/or targeted therapy strongly advised',
-            'Radiation therapy may be necessary',
-            'Clinical trial participation should be considered'
-        ]
-    },
-    'Melanoma Stage 4': {
-        'description': 'Advanced melanoma that has metastasized to distant organs such as lungs, liver, brain, or bones. Most serious stage requiring immediate intervention.',
-        'severity': 'Critical',
-        'stage': 4,
-        'recommendations': [
-            'Immediate oncology consultation with melanoma specialist',
-            'Systemic therapies including immunotherapy and targeted therapy',
-            'Comprehensive mutation testing for treatment planning',
-            'Consider clinical trials for innovative treatment options'
-        ]
-    },
-    'Not Melanoma': {
+    'Benign': {
         'description': 'The analyzed skin lesion does not show characteristics typical of melanoma. However, continue monitoring for any changes.',
         'severity': 'Low',
         'recommendations': [
-            'Continue regular skin self-examinations',
+            'Continue regular skin self-examinations monthly',
             'Use sunscreen daily (SPF 30+) to prevent skin damage',
-            'Consult a dermatologist if the lesion changes in size, color, or shape',
-            'Monitor for any new symptoms like itching, bleeding, or pain',
-            'Schedule routine dermatology check-ups annually'
+            'Monitor for any changes in size, color, or shape',
+            'Schedule routine dermatology check-ups annually',
+            'Photograph the lesion for future reference',
+            'Stay aware of the ABCDE warning signs'
+        ],
+        'next_steps': [
+            'Self-monitor using ABCDE rule (Asymmetry, Border, Color, Diameter, Evolving)',
+            'Consult dermatologist if any changes occur',
+            'Maintain healthy skin care routine',
+            'Annual full-body skin examination recommended'
         ]
     }
 }
@@ -352,56 +332,7 @@ def advanced_mock_prediction_from_image(img_array_simple):
         return 'Not Melanoma', min(confidence, 95.0), img_features
 
 
-def determine_melanoma_stage(img_features):
-    """Determine melanoma stage based on image features
-    
-    Staging criteria based on melanoma characteristics:
-    - Stage 1: Early, localized (≤1mm thick, no ulceration)
-    - Stage 2: Intermediate (>1mm thick and/or ulcerated)
-    - Stage 3: Regional spread (lymph node involvement)
-    - Stage 4: Distant metastasis
-    
-    Args:
-        img_features: Dictionary of image features
-        
-    Returns:
-        int: Melanoma stage (1-4)
-    """
-    # Extract and normalize relevant features properly
-    darkness = img_features.get('darkness', 100) / 255  # Normalize to 0-1
-    color_variation = img_features.get('color_variation', 20) / 100  # Normalize to 0-1
-    border_irregularity = min(1.0, img_features.get('border_irregularity', 0.5))  # Cap at 1.0
-    asymmetry = min(1.0, img_features.get('asymmetry', 0.3))  # Cap at 1.0
-    diameter_mm = img_features.get('diameter_estimate', 6)
-    
-    # Calculate ABCDE criteria scores (Asymmetry, Border, Color, Diameter, Evolution)
-    # Evolution cannot be determined from a single image, so we exclude it
-    
-    # Create a combined severity score with balanced weights
-    # Using conservative scoring to produce varied stages
-    severity_score = (
-        min(asymmetry, 0.5) * 0.20 +           # Asymmetry (capped contribution)
-        min(border_irregularity, 0.5) * 0.20 + # Border irregularity (capped)
-        min(color_variation, 0.5) * 0.25 +     # Color variation (capped)
-        min(darkness, 0.5) * 0.15 +            # Darkness (capped)
-        min(1.0, diameter_mm / 20) * 0.20      # Diameter relative to 20mm
-    )
-    
-    # Add some image-based randomness for natural variation
-    hash_value = (darkness * 100 + color_variation * 50 + asymmetry * 30) % 1
-    variation = (hash_value - 0.5) * 0.15  # ±7.5% variation
-    severity_score = max(0, min(1, severity_score + variation))
-    
-    # Determine stage with realistic distribution
-    # Most melanomas (60-70%) are caught in stage 1-2
-    if severity_score > 0.75:
-        return 4  # Very severe features - possible metastatic (10-15%)
-    elif severity_score > 0.55:
-        return 3  # Severe features - possible lymph node involvement (15-20%)
-    elif severity_score > 0.35:
-        return 2  # Moderate features - thicker lesion (25-30%)
-    else:
-        return 1  # Mild features - early stage (35-40%)
+# Staging function removed - Binary classification only (Melanoma vs No Melanoma)
 
 
 def load_models():
@@ -409,30 +340,26 @@ def load_models():
     global classifier_model, segmentation_model
     
     try:
-        # Try to load saved models
-        if os.path.exists('models/classifier_model.h5'):
+        # Load the trained binary classification model (Melanoma vs No Melanoma)
+        model_path = 'models/best_model_20251103_225237.h5'
+        
+        if os.path.exists(model_path):
             try:
-                classifier_model = keras.models.load_model('models/classifier_model.h5')
-                print("✓ Classifier model loaded successfully")
+                classifier_model = keras.models.load_model(model_path)
+                print("=" * 60)
+                print("✅ TRAINED MODEL LOADED SUCCESSFULLY")
+                print(f"   Model: {model_path}")
+                print(f"   Layers: {len(classifier_model.layers)}")
+                print(f"   Input shape: {classifier_model.input_shape}")
+                print(f"   Output shape: {classifier_model.output_shape}")
+                print("=" * 60)
             except Exception as e:
-                print(f"⚠ Error loading classifier model: {e}")
-                print("⚠ Falling back to mock predictions for classifier.")
-                classifier_model = None
+                print(f"❌ Error loading trained model: {e}")
+                print("⚠️  Falling back to mock predictions.")
         else:
-            print("⚠ Classifier model file not found at models/classifier_model.h5")
-            print("⚠ Using mock predictions. Place trained model in the models directory.")
-            
-        if os.path.exists('models/segmentation_model.h5'):
-            try:
-                segmentation_model = keras.models.load_model('models/segmentation_model.h5')
-                print("✓ Segmentation model loaded successfully")
-            except Exception as e:
-                print(f"⚠ Error loading segmentation model: {e}")
-                print("⚠ Falling back to mock predictions for segmentation.")
-                segmentation_model = None
-        else:
-            print("⚠ Segmentation model file not found at models/segmentation_model.h5")
-            print("⚠ Using mock predictions. Place trained model in the models directory.")
+            print(f"⚠️  Trained model not found at: {model_path}")
+            print("⚠️  Falling back to mock predictions.")
+            classifier_model = None
             
         # Create the models directory if it doesn't exist
         os.makedirs('models', exist_ok=True)
@@ -511,10 +438,10 @@ def preprocess_image(image_path, target_size=(224, 224)):
 
 
 def predict_disease(image_path):
-    """Predict disease from image with advanced melanoma staging"""
+    """Predict disease from image - Binary classification: Melanoma vs No Melanoma"""
     try:
-        # Preprocess image
-        img_array = preprocess_image(image_path)
+        # Preprocess image (224x224 RGB, normalized to 0-1)
+        img_array = preprocess_image(image_path, target_size=(224, 224))
         
         # Track if we're using real or mock predictions
         using_mock = False
@@ -523,98 +450,58 @@ def predict_disease(image_path):
         # If models are loaded, use them
         if classifier_model is not None:
             try:
+                # Model outputs probability for melanoma (single output neuron with sigmoid)
                 predictions = classifier_model.predict(img_array, verbose=0)
-                predicted_class = np.argmax(predictions[0])
-                confidence = float(predictions[0][predicted_class]) * 100
+                melanoma_probability = float(predictions[0][0])  # Probability of melanoma
                 
-                # For demonstration purposes, we'll use the original prediction
-                base_disease = class_names[predicted_class]
+                # Binary classification: 
+                # If probability > 0.5, predict Melanoma
+                # Otherwise, predict Benign (No Melanoma)
+                if melanoma_probability > 0.5:
+                    disease = 'Melanoma'
+                    confidence = melanoma_probability * 100
+                else:
+                    disease = 'Benign'
+                    confidence = (1 - melanoma_probability) * 100
+                
+                print(f"✅ Model prediction: {disease} ({confidence:.2f}% confidence)")
+                print(f"   Raw melanoma probability: {melanoma_probability:.4f}")
+                
             except Exception as e:
-                print(f"Error during model prediction: {e}")
-                print("Falling back to mock predictions")
+                print(f"❌ Error during model prediction: {e}")
+                print("⚠️  Falling back to mock predictions")
                 using_mock = True
                 model_status = f"Mock prediction (model error: {str(e)[:100]})"
-                # Call our advanced mock prediction function
-                base_disease, confidence, img_features = advanced_mock_prediction(img_array)
+                # Simple mock for binary classification
+                disease = np.random.choice(['Benign', 'Melanoma'], p=[0.85, 0.15])
+                confidence = np.random.uniform(75.0, 95.0)
         else:
             # Mock prediction when model isn't loaded
             using_mock = True
             model_status = "Mock prediction (no model loaded)"
             
-            # Try to analyze basic image characteristics for better mock predictions
-            try:
-                img = Image.open(image_path)
-                img_array_simple = np.array(img.resize((50, 50)))
-                
-                # Advanced image analysis for detailed features
-                base_disease, confidence, img_features = advanced_mock_prediction_from_image(img_array_simple)
-            except Exception as e:
-                # Fallback if image analysis fails
-                print(f"Error during mock image analysis: {e}")
-                base_disease = np.random.choice(['Melanoma', 'Basal Cell Carcinoma', 'Acne', 'Ringworm', 
-                                               'Burns', 'Eczema', 'Psoriasis', 'Normal Skin'])
-                confidence = np.random.uniform(75.0, 92.0)
-                img_features = {
-                    'darkness': 100,
-                    'color_variation': 20,
-                    'border_irregularity': 0.5,
-                    'asymmetry': 0.3,
-                    'diameter_estimate': 6  # in mm
-                }
+            # Binary mock prediction (weighted toward benign)
+            disease = np.random.choice(['Benign', 'Melanoma'], p=[0.85, 0.15])
+            confidence = np.random.uniform(75.0, 95.0)
         
-        # Determine melanoma stage if melanoma is detected
-        if base_disease == 'Melanoma':
-            # Use image features to determine melanoma stage
-            if using_mock:
-                melanoma_stage = determine_melanoma_stage(img_features)
-                disease = f"Melanoma Stage {melanoma_stage}"
-            else:
-                # If using real model, use confidence to estimate stage
-                # In a production system, this would use a dedicated staging model
-                if confidence > 95:
-                    disease = "Melanoma Stage 4"
-                elif confidence > 90:
-                    disease = "Melanoma Stage 3"
-                elif confidence > 85:
-                    disease = "Melanoma Stage 2"
-                else:
-                    disease = "Melanoma Stage 1"
-        else:
-            disease = base_disease
-        
-        # Get disease info or fallback to basic info if not found
-        if disease in disease_info:
-            info = disease_info[disease]
-        else:
-            # Basic info for other diseases or if staging info not found
-            info = {
-                'description': f"{disease} detected with {round(confidence)}% confidence.",
-                'severity': 'Medium',
-                'recommendations': [
-                    'Consult with a dermatologist',
-                    'Protect the affected area',
-                    'Follow up with healthcare provider'
-                ]
-            }
+        # Get disease info
+        info = disease_info.get(disease, disease_info['Benign'])
         
         # Log the prediction
         print(f"Prediction: {disease} (Confidence: {round(confidence, 2)}%) - {model_status}")
         
-        # Add features to the result for comprehensive analysis
+        # Return result for binary classification
         result = {
             'disease': disease,
             'confidence': round(confidence, 2),
             'description': info['description'],
             'severity': info['severity'],
             'recommendations': info['recommendations'],
+            'next_steps': info.get('next_steps', []),
             'using_mock_prediction': using_mock,
-            'features': img_features if using_mock else {},
+            'model_status': model_status
         }
         
-        # If melanoma, add stage information
-        if disease.startswith('Melanoma Stage'):
-            result['stage'] = int(disease[-1])
-            
         return result
     except Exception as e:
         print(f"Critical error during prediction: {e}")
@@ -628,11 +515,23 @@ def home():
         'message': 'Melanoma Detection System API',
         'version': '1.0.0',
         'endpoints': {
+            '/health': 'GET - Health check',
             '/predict': 'POST - Upload image for prediction',
             '/generate-report': 'POST - Generate patient report',
             '/doctors': 'GET - Get list of doctors',
             '/consult-doctor': 'POST - Send report to doctor'
         }
+    })
+
+
+@app.route('/health')
+def health():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'model_loaded': classifier_model is not None,
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.0.0'
     })
 
 
@@ -822,20 +721,15 @@ if __name__ == '__main__':
     else:
         print("OpenCV: Not installed")
     
-    print("\nLoading models...")
+    print("\nLoading trained melanoma detection model...")
     model_status = load_models()
     
-    if model_status['classifier'] and model_status['segmentation']:
-        print("\n✅ All models loaded successfully!")
+    if model_status and model_status.get('classifier'):
+        print("\n✅ Trained model loaded successfully! Using real predictions.")
     else:
-        print("\n⚠️ Some models were not loaded. Using mock predictions.")
-        if not model_status['classifier']:
-            print("   - Classifier model not available")
-        if not model_status['segmentation']:
-            print("   - Segmentation model not available")
-        print("\nTo use real predictions, place model files in the models/ directory:")
-        print("  - models/classifier_model.h5")
-        print("  - models/segmentation_model.h5")
+        print("\n⚠️ Trained model not loaded. Using mock predictions.")
+        print("\nTo use real predictions, ensure the trained model is at:")
+        print("  - models/best_model_20251103_225237.h5")
     
     print("\nInitializing server on port 5001...")
     print("=" * 80)

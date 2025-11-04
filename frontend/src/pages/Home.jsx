@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCloudUploadAlt, FaImage, FaTimes, FaHeartbeat } from 'react-icons/fa';
 import { motion } from 'framer-motion';
@@ -13,6 +13,13 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+
+  // Clear previous results when Home page loads
+  useEffect(() => {
+    localStorage.removeItem('analysisResult');
+    localStorage.removeItem('reportFilename');
+    localStorage.removeItem('patientInfo');
+  }, []);
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -119,7 +126,7 @@ const Home = () => {
         transition={{ duration: 0.6 }}
       >
        
-        <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-slate-700 to-blue-700 bg-clip-text text-transparent">
           Advanced Melanoma Detection 
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
@@ -137,8 +144,8 @@ const Home = () => {
           </div>
           
           <div className="flex items-center bg-white rounded-lg shadow-md px-4 py-3">
-            <div className="bg-indigo-100 p-2 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+            <div className="bg-blue-100 p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-700" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
               </svg>
             </div>
@@ -169,7 +176,7 @@ const Home = () => {
         <div className="card bg-white rounded-2xl shadow-xl p-10 hover:shadow-2xl transition-shadow duration-300 border border-gray-100">
           {!imagePreview ? (
             <div
-              className="upload-zone border-3 border-dashed border-indigo-300 rounded-xl p-12 text-center cursor-pointer hover:border-indigo-500 transition-all duration-300 bg-gradient-to-br from-white to-indigo-50"
+              className="upload-zone border-3 border-dashed border-blue-300 rounded-xl p-12 text-center cursor-pointer hover:border-blue-600 transition-all duration-300 bg-gradient-to-br from-white to-blue-50"
               onClick={() => fileInputRef.current.click()}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -179,24 +186,24 @@ const Home = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="bg-indigo-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FaCloudUploadAlt className="text-5xl text-indigo-600" />
+                <div className="bg-blue-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FaCloudUploadAlt className="text-5xl text-blue-700" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Upload Skin Lesion Image
+                                <h3 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-slate-700 to-blue-700 bg-clip-text text-transparent">
+                  Upload Your Image
                 </h3>
                 <p className="text-gray-600 mb-6 text-lg max-w-xl mx-auto">
                   Drag and drop your image here, or click to browse files from your device
                 </p>
-                <div className="bg-indigo-50 py-3 px-5 rounded-lg inline-block mb-4">
-                  <p className="text-sm text-indigo-800 font-medium flex items-center">
+                <div className="bg-blue-50 py-3 px-5 rounded-lg inline-block mb-4">
+                  <p className="text-sm text-blue-900 font-medium flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     Supported formats: PNG, JPG, JPEG (Max 16MB)
                   </p>
                 </div>
-                <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium inline-flex items-center">
+                <button className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium inline-flex items-center">
                   <FaImage className="mr-2" /> Browse Files
                 </button>
               </motion.div>
@@ -227,7 +234,7 @@ const Home = () => {
                   }}></div>
                   
                   <motion.div 
-                    className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-lg"
+                    className="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-blue-600/20 rounded-lg"
                     animate={{ opacity: [0, 0.5, 0] }}
                     transition={{ 
                       repeat: Infinity, 
@@ -248,9 +255,9 @@ const Home = () => {
                 </div>
                 
                 <div className="w-full max-w-md">
-                  <h3 className="text-xl font-semibold mb-4 text-indigo-800">Ready for Analysis</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-slate-800">Ready for Analysis</h3>
                   
-                  <div className="bg-indigo-50 rounded-lg p-4 mb-6">
+                  <div className="bg-blue-50 rounded-lg p-4 mb-6">
                     <div className="flex items-start">
                       <div className="bg-indigo-100 p-2 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
