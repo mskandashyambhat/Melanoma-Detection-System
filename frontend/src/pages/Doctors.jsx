@@ -178,14 +178,9 @@ const Doctors = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              {/* Doctor Image */}
-              <div className="flex flex-col items-center mb-4">
-                <img
-                  src={doctor.image}
-                  alt={doctor.name}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 mb-4"
-                />
-                <h3 className="text-xl font-bold text-gray-900">{doctor.name}</h3>
+              {/* Doctor Info Header */}
+              <div className="mb-4 pb-4 border-b border-gray-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{doctor.name}</h3>
                 <p className="text-blue-600 font-medium">{doctor.specialization}</p>
               </div>
 

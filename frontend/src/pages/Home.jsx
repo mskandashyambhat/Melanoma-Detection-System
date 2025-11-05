@@ -82,34 +82,92 @@ const Home = () => {
         // Store results and navigate
         localStorage.setItem('analysisResult', JSON.stringify(analysisResult));
       } else {
-        // Normal API call to backend
+        // Step 1: Validate the image first
         const formData = new FormData();
         formData.append('image', selectedImage);
         
-        const response = await axios.post(API_CONFIG.getUrl('PREDICT'), formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          timeout: 15000
-        });
+        toast.info('Validating image...', { autoClose: 2000 });
         
-        // Store results and navigate
-        localStorage.setItem('analysisResult', JSON.stringify({
-          ...response.data,
-          imagePreview: imagePreview
-        }));
+        try {
+          const validateResponse = await axios.post(API_CONFIG.getUrl('VALIDATE'), formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            timeout: 10000
+          });
+          
+          // If validation passes, show success and proceed to prediction
+          if (validateResponse.data.valid) {
+            toast.success('Image validated successfully! Analyzing...', { autoClose: 2000 });
+            
+            // Step 2: Now call predict endpoint
+            const predictFormData = new FormData();
+            predictFormData.append('image', selectedImage);
+            
+            const response = await axios.post(API_CONFIG.getUrl('PREDICT'), predictFormData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+              timeout: 15000
+            });
+            
+            // Store results and navigate
+            localStorage.setItem('analysisResult', JSON.stringify({
+              ...response.data,
+              imagePreview: imagePreview
+            }));
+            
+            toast.success('Analysis completed successfully!');
+            navigate('/results');
+          }
+        } catch (validationError) {
+          // If validation fails, show specific error
+          if (validationError.response?.status === 400) {
+            const errorMessage = validationError.response?.data?.error || 'Invalid image';
+            const errorDetails = validationError.response?.data?.details || '';
+            
+            toast.error(
+              <div>
+                <div className="font-semibold">{errorMessage}</div>
+                {errorDetails && <div className="text-sm mt-1">{errorDetails}</div>}
+              </div>,
+              {
+                duration: 6000,
+                style: {
+                  maxWidth: '500px',
+                }
+              }
+            );
+          } else {
+            // Network or other errors
+            toast.error('Validation failed. Please ensure the backend is running.');
+          }
+          setLoading(false);
+          return;
+        }
       }
       
-      toast.success('Analysis completed successfully!');
-      navigate('/results');
     } catch (error) {
       console.error('Error:', error);
-      const msg = error.response?.data?.error || error.message || 'Failed to analyze image.';
       
       if (API_CONFIG.USE_MOCK) {
         toast.error('Error in demo mode. Please try again.');
       } else {
-        toast.error(`${msg} Please ensure the backend is running and try a PNG/JPG under 16MB.`);
+        // Extract detailed error message from backend
+        const errorMessage = error.response?.data?.error || error.message || 'Failed to analyze image.';
+        
+        // If it's a prediction error (400), show the specific reason
+        if (error.response?.status === 400) {
+          toast.error(errorMessage, {
+            duration: 5000,
+            style: {
+              maxWidth: '500px',
+            }
+          });
+        } else {
+          // Network or other errors
+          toast.error(`${errorMessage} Please ensure the backend is running.`);
+        }
       }
     } finally {
       setLoading(false);
@@ -127,43 +185,11 @@ const Home = () => {
       >
        
         <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-slate-700 to-blue-700 bg-clip-text text-transparent">
-          Advanced Melanoma Detection 
+          Melanoma Detection System
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
           Upload an image of your skin lesion for instant analysis
         </p>
-        
-        <div className="flex flex-wrap justify-center gap-6 mt-8">
-          <div className="flex items-center bg-white rounded-lg shadow-md px-4 py-3">
-            <div className="bg-indigo-100 p-2 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span className="ml-2 text-gray-700">Results in seconds</span>
-          </div>
-          
-          <div className="flex items-center bg-white rounded-lg shadow-md px-4 py-3">
-            <div className="bg-blue-100 p-2 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-700" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-              </svg>
-            </div>
-            <span className="ml-2 text-gray-700">Expert dermatologist consults</span>
-          </div>
-          
-          <div className="flex items-center bg-white rounded-lg shadow-md px-4 py-3">
-            <div className="bg-rose-100 p-2 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-                <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span className="ml-2 text-gray-700">
-              Melanoma Detection
-            </span>
-          </div>
-        </div>
       </motion.div>
 
       {/* Main Upload Section */}
@@ -303,69 +329,6 @@ const Home = () => {
           )}
         </div>
       </motion.div>
-
-      {/* Features Section */}
-      <div className="mt-20">
-        <motion.h2 
-          className="text-3xl font-bold text-center mb-12 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          Advanced Features
-        </motion.h2>
-        
-        <motion.div 
-          className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <motion.div 
-            className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
-            whileHover={{ scale: 1.03 }}
-          >
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-indigo-600"></div>
-            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FaImage className="text-4xl text-indigo-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-4 text-center text-indigo-900">Advanced Detection</h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              Advanced CNN models (ResNet50 + UNet) for accurate skin condition identification with precise lesion segmentation
-            </p>
-            <div className="mt-6 flex justify-center">
-              <span className="inline-flex items-center text-sm font-medium text-indigo-600">
-                Learn more
-                <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </span>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
-            whileHover={{ scale: 1.03 }}
-          >
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-purple-600"></div>
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">97%+</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-4 text-center text-indigo-900">High Accuracy</h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              Industry-leading accuracy in detecting melanoma and classifying multiple skin conditions for reliable results
-            </p>
-            <div className="mt-6 flex justify-center">
-              <span className="inline-flex items-center text-sm font-medium text-purple-600">
-                View studies
-                <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </span>
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
 
       {/* How It Works */}
       <motion.div

@@ -171,10 +171,10 @@ const Results = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Severity Level</label>
+                <div className="mb-6">
+                  <label className="text-sm font-medium text-gray-500 mb-2 block">Severity Level</label>
                   <div 
-                    className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold mt-2 shadow-sm ${
+                    className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold shadow-sm ${
                       result.severity === 'Critical' ? 'bg-red-100 text-red-800 border border-red-200' :
                       result.severity === 'High' ? 'bg-orange-100 text-orange-800 border border-orange-200' :
                       result.severity === 'Medium' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
@@ -191,7 +191,7 @@ const Results = () => {
                   </div>
                 </div>
                 
-                <div className="pt-4 mt-4 border-t border-gray-100">
+                <div className="pt-4 border-t border-gray-100">
                   <p className="text-gray-700 leading-relaxed">{result.description}</p>
                 </div>
               </div>
@@ -324,38 +324,57 @@ const Results = () => {
             </motion.div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setShowPatientForm(true)}
-              className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              disabled={generatingReport}
-            >
-              {generatingReport ? (
-                <>
-                  <div className="spinner mr-2 border-2 border-white border-t-transparent"></div>
-                  <span>Generating Report...</span>
-                </>
-              ) : (
-                <>
-                  <FaDownload className="mr-2" />
-                  Download Medical Report
-                </>
-              )}
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleConsultDoctor}
-              className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <FaUserMd className="mr-2" />
-              Consult a Specialist
-            </motion.button>
-          </div>
+          {/* Action Buttons - Only show for valid medical images */}
+          {result.disease !== 'Invalid Image' && (
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowPatientForm(true)}
+                className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                disabled={generatingReport}
+              >
+                {generatingReport ? (
+                  <>
+                    <div className="spinner mr-2 border-2 border-white border-t-transparent"></div>
+                    <span>Generating Report...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaDownload className="mr-2" />
+                    Download Medical Report
+                  </>
+                )}
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleConsultDoctor}
+                className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <FaUserMd className="mr-2" />
+                Consult a Specialist
+              </motion.button>
+            </div>
+          )}
+          
+          {/* For Invalid Images - Show "Try Again" button */}
+          {result.disease === 'Invalid Image' && (
+            <div className="flex justify-center">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/')}
+                className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Upload Another Image
+              </motion.button>
+            </div>
+          )}
         </div>
       </motion.div>
 

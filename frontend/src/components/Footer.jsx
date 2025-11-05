@@ -25,11 +25,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-6 pt-6 border-t border-slate-400/30 text-center">
-          <p className="text-xs text-blue-100">
-            ⚠️ This tool is for educational and screening purposes only. Always consult a qualified dermatologist for proper diagnosis and treatment.
-          </p>
-        </div>
+
       </div>
     </footer>
   );

@@ -28,6 +28,7 @@ except ImportError:
     
 from datetime import datetime
 import json
+from gemini_validator import validate_image_with_gemini
 from report_generator import generate_patient_report
 
 app = Flask(__name__)
@@ -75,21 +76,21 @@ disease_info = {
         ]
     },
     'Benign': {
-        'description': 'The analyzed skin lesion does not show characteristics typical of melanoma. However, continue monitoring for any changes.',
+        'description': 'Good news! The analyzed skin lesion appears benign and does not show characteristics typical of melanoma. This is a low-risk finding, but regular monitoring is always recommended.',
         'severity': 'Low',
         'recommendations': [
+            '✅ No immediate medical action required',
             'Continue regular skin self-examinations monthly',
             'Use sunscreen daily (SPF 30+) to prevent skin damage',
             'Monitor for any changes in size, color, or shape',
-            'Schedule routine dermatology check-ups annually',
-            'Photograph the lesion for future reference',
+            'Photograph the lesion for future comparison',
             'Stay aware of the ABCDE warning signs'
         ],
         'next_steps': [
             'Self-monitor using ABCDE rule (Asymmetry, Border, Color, Diameter, Evolving)',
-            'Consult dermatologist if any changes occur',
+            'Consult dermatologist only if you notice changes',
             'Maintain healthy skin care routine',
-            'Annual full-body skin examination recommended'
+            'Consider annual skin check-up as part of routine wellness'
         ]
     }
 }
@@ -98,75 +99,69 @@ disease_info = {
 doctors = [
     {
         'id': 1,
-        'name': 'Dr. Sarah Johnson',
+        'name': 'Dr. Rajesh Kumar',
         'specialization': 'Dermatology & Skin Cancer',
         'experience': '15 years',
         'rating': 4.9,
-        'location': 'New York Medical Center',
+        'location': 'Apollo Hospital, Bangalore',
         'availability': 'Mon-Fri, 9 AM - 5 PM',
-        'image': 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop&crop=faces',
-        'email': 'sarah.johnson@hospital.com',
-        'phone': '+1-555-0101'
+        'email': 'dr.rajesh@apollohospital.com',
+        'phone': '+91-80-2222-3333'
     },
     {
         'id': 2,
-        'name': 'Dr. Michael Chen',
-        'specialization': 'Dermatologist',
+        'name': 'Dr. Priya Sharma',
+        'specialization': 'Clinical Dermatologist',
         'experience': '12 years',
         'rating': 4.8,
-        'location': 'City Dermatology Clinic',
+        'location': 'Fortis Hospital, Mumbai',
         'availability': 'Mon-Sat, 10 AM - 6 PM',
-        'image': 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop&crop=faces',
-        'email': 'michael.chen@clinic.com',
-        'phone': '+1-555-0102'
+        'email': 'dr.priya@fortishospital.com',
+        'phone': '+91-22-4444-5555'
     },
     {
         'id': 3,
-        'name': 'Dr. Emily Rodriguez',
-        'specialization': 'Oncologist & Dermatology',
+        'name': 'Dr. Anil Desai',
+        'specialization': 'Oncology & Dermatology',
         'experience': '18 years',
         'rating': 5.0,
-        'location': 'Cancer Care Institute',
+        'location': 'Tata Memorial Hospital, Mumbai',
         'availability': 'Tue-Sat, 8 AM - 4 PM',
-        'image': 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=300&h=300&fit=crop&crop=faces',
-        'email': 'emily.rodriguez@cci.com',
-        'phone': '+1-555-0103'
+        'email': 'dr.anil@tatamemorial.com',
+        'phone': '+91-22-6666-7777'
     },
     {
         'id': 4,
-        'name': 'Dr. James Williams',
+        'name': 'Dr. Kavita Reddy',
         'specialization': 'Dermatology',
         'experience': '10 years',
         'rating': 4.7,
-        'location': 'Skin Health Center',
+        'location': 'Manipal Hospital, Bangalore',
         'availability': 'Mon-Fri, 11 AM - 7 PM',
-        'image': 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300&h=300&fit=crop&crop=faces',
-        'email': 'james.williams@skincenter.com',
-        'phone': '+1-555-0104'
+        'email': 'dr.kavita@manipalhospital.com',
+        'phone': '+91-80-8888-9999'
     },
     {
         'id': 5,
-        'name': 'Dr. Priya Patel',
+        'name': 'Dr. Suresh Menon',
         'specialization': 'Pediatric Dermatology',
         'experience': '8 years',
         'rating': 4.9,
-        'location': 'Children\'s Skin Clinic',
+        'location': 'Max Hospital, Delhi',
         'availability': 'Mon-Thu, 9 AM - 5 PM',
-        'image': 'https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=300&h=300&fit=crop&crop=faces',
-        'email': 'priya.patel@childclinic.com',
-        'phone': '+1-555-0105'
+        'email': 'dr.suresh@maxhospital.com',
+        'phone': '+91-11-1111-2222'
     },
     {
         'id': 6,
-        'name': 'Dr. Robert Anderson',
-        'specialization': 'Mohs Surgery Specialist',
-        'experience': '20 years',
+        'name': 'Dr. Meera Iyer',
+        'specialization': 'Cosmetic & Medical Dermatology',
+        'experience': '14 years',
         'rating': 4.8,
-        'location': 'Advanced Dermatology',
+        'location': 'AIIMS, New Delhi',
         'availability': 'Wed-Sun, 8 AM - 3 PM',
-        'image': 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=300&h=300&fit=crop&crop=faces',
-        'email': 'robert.anderson@advderm.com',
-        'phone': '+1-555-0106'
+        'email': 'dr.meera@aiims.edu',
+        'phone': '+91-11-3333-4444'
     }
 ]
 
@@ -438,7 +433,7 @@ def preprocess_image(image_path, target_size=(224, 224)):
 
 
 def predict_disease(image_path):
-    """Predict disease from image - Binary classification: Melanoma vs No Melanoma"""
+    """Predict disease from image"""
     try:
         # Preprocess image (224x224 RGB, normalized to 0-1)
         img_array = preprocess_image(image_path, target_size=(224, 224))
@@ -535,6 +530,101 @@ def health():
     })
 
 
+@app.route('/validate', methods=['POST'])
+def validate_image():
+    """Validate if uploaded image is a valid medical image using Gemini AI"""
+    try:
+        # Check if file is present
+        if 'image' not in request.files:
+            return jsonify({
+                'error': 'No image file provided',
+                'details': 'Please ensure you selected an image file before uploading',
+                'code': 'MISSING_FILE'
+            }), 400
+        
+        file = request.files['image']
+        
+        if file.filename == '':
+            return jsonify({
+                'error': 'No file selected',
+                'details': 'An empty file was submitted. Please select a valid image file',
+                'code': 'EMPTY_FILE'
+            }), 400
+        
+        if not allowed_file(file.filename):
+            return jsonify({
+                'error': 'Invalid file type',
+                'details': f'Only {", ".join(ALLOWED_EXTENSIONS)} files are supported',
+                'code': 'INVALID_FILE_TYPE'
+            }), 400
+        
+        # Check file size before saving
+        file_content = file.read()
+        file.seek(0)  # Reset file pointer
+        
+        # Check if file is empty
+        if len(file_content) == 0:
+            return jsonify({
+                'error': 'Empty file uploaded',
+                'details': 'The uploaded file contains no data',
+                'code': 'EMPTY_FILE_CONTENT'
+            }), 400
+            
+        # Check file size (16MB limit)
+        if len(file_content) > app.config['MAX_CONTENT_LENGTH']:
+            return jsonify({
+                'error': 'File too large',
+                'details': f'Maximum file size is {app.config["MAX_CONTENT_LENGTH"] / (1024*1024)}MB',
+                'code': 'FILE_TOO_LARGE'
+            }), 400
+        
+        # Save file temporarily for validation
+        filename = secure_filename(file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{timestamp}_{filename}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        try:
+            file.save(filepath)
+            
+            # Use Gemini AI to validate the image
+            is_valid, validation_message = validate_image_with_gemini(filepath)
+            
+            if not is_valid:
+                # Delete the file if validation fails
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                    
+                return jsonify({
+                    'valid': False,
+                    'error': 'Invalid image for medical analysis',
+                    'details': validation_message,
+                    'code': 'VALIDATION_FAILED'
+                }), 400
+            
+            # Image is valid - return success (keep file for prediction)
+            return jsonify({
+                'valid': True,
+                'message': validation_message,
+                'filename': filename
+            }), 200
+            
+        except Exception as e:
+            # Clean up file on error
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            raise e
+            
+    except Exception as e:
+        print(f"❌ Validation error: {str(e)}")
+        return jsonify({
+            'valid': False,
+            'error': 'Validation failed',
+            'details': str(e),
+            'code': 'VALIDATION_ERROR'
+        }), 500
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     """Handle image upload and prediction"""
@@ -590,9 +680,9 @@ def predict():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        print(f"Image saved to {filepath}, proceeding with analysis...")
+        print(f"Image saved to {filepath}, proceeding with prediction...")
         
-        # Predict disease
+        # Predict disease (validation already done at /validate endpoint)
         result = predict_disease(filepath)
         result['image_path'] = filepath
         result['filename'] = filename

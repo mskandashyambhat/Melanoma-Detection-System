@@ -19,6 +19,7 @@ export const API_CONFIG = {
   
   // Define endpoints
   ENDPOINTS: {
+    VALIDATE: '/validate',
     PREDICT: '/predict',
     HEALTH: '/',
     DOCTORS: '/doctors',

@@ -47,13 +47,6 @@ const Header = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 group">
-            <motion.div 
-              className="bg-gradient-to-r from-slate-700 to-blue-800 p-2 rounded-lg"
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              <FaHeartbeat className="text-white text-3xl" />
-            </motion.div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-blue-800 bg-clip-text text-transparent">
                 Melanoma Detection System
