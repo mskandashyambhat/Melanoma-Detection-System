@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCloudUploadAlt, FaImage, FaTimes, FaHeartbeat } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaImage, FaTimes } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -314,7 +314,6 @@ const Home = () => {
                       </motion.span>
                     ) : (
                       <span className="flex items-center justify-center">
-                        <FaHeartbeat className="mr-2" />
                         Start Analysis
                       </span>
                     )}
