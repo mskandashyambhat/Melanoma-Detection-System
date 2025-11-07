@@ -30,6 +30,7 @@ from datetime import datetime
 import json
 from gemini_validator import validate_image_with_gemini
 from report_generator import generate_patient_report
+from chatbot_service import get_chatbot_response
 
 app = Flask(__name__)
 CORS(app)
@@ -790,6 +791,33 @@ def consult_doctor():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    """AI Chatbot endpoint for answering patient queries"""
+    try:
+        data = request.get_json()
+        user_message = data.get('message', '')
+        context = data.get('context', {})
+        
+        if not user_message:
+            return jsonify({'error': 'Message is required'}), 400
+        
+        # Get AI response
+        response = get_chatbot_response(user_message, context)
+        
+        return jsonify({
+            'response': response,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        print(f"Chatbot error: {str(e)}")
+        return jsonify({
+            'response': 'I apologize, but I encountered an error. Please try again or consult with a medical professional.',
+            'error': str(e)
+        }), 500
 
 
 if __name__ == '__main__':

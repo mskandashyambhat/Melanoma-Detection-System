@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FaDownload, FaUserMd, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import MedicalChatbot from '../components/MedicalChatbot';
 
 const Results = () => {
   const [result, setResult] = useState(null);
@@ -535,6 +536,11 @@ const Results = () => {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* AI Medical Chatbot - Only show for valid medical images */}
+      {result.disease !== 'Invalid Image' && (
+        <MedicalChatbot result={result} />
       )}
     </div>
   );
