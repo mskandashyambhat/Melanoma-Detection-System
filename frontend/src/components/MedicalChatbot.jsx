@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaUser } from 'react-icons/fa';
 import axios from 'axios';
+import { useTheme } from '../context/ThemeContext';
 
 const MedicalChatbot = ({ result }) => {
+  const { isDark } = useTheme();
   // Function to convert markdown to formatted HTML
   const formatMessage = (text) => {
     return text
@@ -134,8 +136,10 @@ const MedicalChatbot = ({ result }) => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full md:w-1/4 min-w-[320px] max-w-[480px] bg-white shadow-2xl z-50 flex flex-col"
-            style={{ borderLeft: '1px solid #e5e7eb' }}
+            className={`fixed right-0 top-0 h-full w-full md:w-1/4 min-w-[320px] max-w-[480px] shadow-2xl z-50 flex flex-col ${
+              isDark ? 'bg-gray-900' : 'bg-white'
+            }`}
+            style={{ borderLeft: isDark ? '1px solid #374151' : '1px solid #e5e7eb' }}
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex items-center justify-between shadow-lg">
@@ -169,7 +173,7 @@ const MedicalChatbot = ({ result }) => {
             {/* Messages Container */}
             <div
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+              className={`flex-1 overflow-y-auto p-4 space-y-4 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}
               style={{ maxHeight: 'calc(100vh - 280px)' }}
             >
               {messages.map((message, index) => (
@@ -196,7 +200,9 @@ const MedicalChatbot = ({ result }) => {
                       <div className={`rounded-2xl p-3 shadow-sm ${
                         message.type === 'user'
                           ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-tr-none'
-                          : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
+                          : isDark 
+                            ? 'bg-gray-700 text-gray-100 rounded-tl-none border border-gray-600'
+                            : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
                       }`}>
                         <div 
                           className="text-sm leading-relaxed whitespace-pre-wrap"
@@ -221,7 +227,9 @@ const MedicalChatbot = ({ result }) => {
                     <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-500">
                       <FaRobot className="text-white text-sm" />
                     </div>
-                    <div className="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm border border-gray-200">
+                    <div className={`rounded-2xl rounded-tl-none p-3 shadow-sm ${
+                      isDark ? 'bg-gray-700 border border-gray-600' : 'bg-white border border-gray-200'
+                    }`}>
                       <div className="flex gap-1">
                         <motion.div
                           animate={{ scale: [1, 1.2, 1] }}
@@ -249,8 +257,10 @@ const MedicalChatbot = ({ result }) => {
 
             {/* Suggested Questions */}
             {messages.length <= 1 && !isLoading && (
-              <div className="px-4 py-2 bg-white border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-2 font-semibold">Suggested questions:</p>
+              <div className={`px-4 py-2 border-t ${
+                isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+              }`}>
+                <p className={`text-xs mb-2 font-semibold ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Suggested questions:</p>
                 <div className="flex flex-wrap gap-2">
                   {suggestedQuestions.slice(0, 3).map((question, index) => (
                     <button
@@ -266,14 +276,20 @@ const MedicalChatbot = ({ result }) => {
             )}
 
             {/* Input Area */}
-            <div className="p-4 bg-white border-t border-gray-200 shadow-lg">
+            <div className={`p-4 border-t shadow-lg ${
+              isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
               <div className="flex gap-2">
                 <textarea
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about your condition..."
-                  className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                  className={`flex-1 border rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
+                    isDark 
+                      ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  }`}
                   rows="2"
                   disabled={isLoading}
                 />
@@ -285,7 +301,7 @@ const MedicalChatbot = ({ result }) => {
                   <FaPaperPlane className="text-lg" />
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mt-2 text-center">
+              <p className={`text-xs mt-2 text-center ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                 Press Enter to send • Shift+Enter for new line
               </p>
             </div>

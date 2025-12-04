@@ -97,6 +97,58 @@ const Doctors = () => {
           image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=300&h=300&fit=crop&crop=faces',
           email: 'robert.anderson@advderm.com',
           phone: '+1-555-0106'
+        },
+        {
+          id: 107,
+          name: 'Dr. Shyam',
+          specialization: 'MD Dermatology, MBBS',
+          experience: '14 years',
+          rating: 4.9,
+          location: 'Digital Health Institute',
+          availability: 'Mon-Fri, 10 AM - 6 PM',
+          image: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=300&h=300&fit=crop&crop=faces',
+          email: 'skandashyam102@gmail.com',
+          phone: '+1-555-0107',
+          realEmail: true
+        },
+        {
+          id: 108,
+          name: 'Dr. Kaushik',
+          specialization: 'Surgical Oncology & Dermatology',
+          experience: '16 years',
+          rating: 4.8,
+          location: 'Advanced Cancer Care',
+          availability: 'Tue-Sat, 9 AM - 5 PM',
+          image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop&crop=faces',
+          email: 'kaushikmuliya@gmail.com',
+          phone: '+1-555-0108',
+          realEmail: true
+        },
+        {
+          id: 109,
+          name: 'Dr. Paavani',
+          specialization: 'Cosmetic & Medical Dermatology',
+          experience: '11 years',
+          rating: 5.0,
+          location: 'Skin Wellness Center',
+          availability: 'Mon-Thu, 11 AM - 7 PM',
+          image: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=300&h=300&fit=crop&crop=faces',
+          email: 'kpaavani20@gmail.com',
+          phone: '+1-555-0109',
+          realEmail: true
+        },
+        {
+          id: 110,
+          name: 'Dr. Deepa',
+          specialization: 'Dermatopathology & Melanoma Research',
+          experience: '19 years',
+          rating: 4.9,
+          location: 'Research Dermatology Clinic',
+          availability: 'Mon-Fri, 8 AM - 4 PM',
+          image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop&crop=faces',
+          email: 'deepamk725@gmail.com',
+          phone: '+1-555-0110',
+          realEmail: true
         }
       ];
       setDoctors(dummyDoctors);
@@ -146,8 +198,8 @@ const Doctors = () => {
   if (loading) {
     return (
       <div className="container mx-auto px-6 py-12 text-center">
-        <div className="spinner mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading doctors...</p>
+        <div className="spinner mx-auto border-cyan-400 border-t-transparent"></div>
+        <p className="mt-4 text-gray-700 dark:text-gray-300">Loading doctors...</p>
       </div>
     );
   }
@@ -160,10 +212,10 @@ const Doctors = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 gradient-text">
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-500 bg-clip-text text-transparent">
             Consult Our Expert Doctors
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Connect with board-certified dermatologists and oncologists for professional consultation
           </p>
         </div>
@@ -173,49 +225,49 @@ const Doctors = () => {
           {doctors.map((doctor, index) => (
             <motion.div
               key={doctor.id}
-              className="card hover:scale-105 transition-transform duration-300"
+              className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-2xl shadow-cyan-500/10 p-6 hover:shadow-cyan-500/20 hover:scale-105 transition-all duration-300 border border-gray-200 dark:border-gray-700"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               {/* Doctor Info Header */}
-              <div className="mb-4 pb-4 border-b border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{doctor.name}</h3>
-                <p className="text-blue-600 font-medium">{doctor.specialization}</p>
+              <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-bold text-cyan-600 dark:text-cyan-400 mb-2">{doctor.name}</h3>
+                <p className="text-blue-600 dark:text-blue-400 font-medium">{doctor.specialization}</p>
               </div>
 
               {/* Doctor Details */}
               <div className="space-y-3 mb-6">
-                <div className="flex items-center text-gray-700">
-                  <FaStar className="text-yellow-500 mr-2" />
+                <div className="flex items-center text-gray-700 dark:text-gray-300">
+                  <FaStar className="text-yellow-400 mr-2" />
                   <span className="font-semibold">{doctor.rating}</span>
-                  <span className="text-gray-500 ml-1">/5.0 Rating</span>
+                  <span className="text-gray-500 dark:text-gray-500 ml-1">/5.0 Rating</span>
                 </div>
 
-                <div className="flex items-start text-gray-700">
-                  <FaMapMarkerAlt className="text-blue-500 mr-2 mt-1 flex-shrink-0" />
+                <div className="flex items-start text-gray-700 dark:text-gray-300">
+                  <FaMapMarkerAlt className="text-cyan-400 mr-2 mt-1 flex-shrink-0" />
                   <span className="text-sm">{doctor.location}</span>
                 </div>
 
-                <div className="flex items-start text-gray-700">
-                  <FaClock className="text-green-500 mr-2 mt-1 flex-shrink-0" />
+                <div className="flex items-start text-gray-700 dark:text-gray-300">
+                  <FaClock className="text-green-400 mr-2 mt-1 flex-shrink-0" />
                   <span className="text-sm">{doctor.availability}</span>
                 </div>
 
-                <div className="flex items-center text-gray-700">
-                  <FaCheckCircle className="text-purple-500 mr-2" />
+                <div className="flex items-center text-gray-700 dark:text-gray-300">
+                  <FaCheckCircle className="text-purple-400 mr-2" />
                   <span className="text-sm font-medium">{doctor.experience} Experience</span>
                 </div>
               </div>
 
               {/* Contact Info */}
-              <div className="border-t pt-4 mb-4 space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <FaEnvelope className="mr-2 text-gray-400" />
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-4 space-y-2">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <FaEnvelope className="mr-2 text-cyan-400" />
                   <span className="truncate">{doctor.email}</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <FaPhone className="mr-2 text-gray-400" />
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <FaPhone className="mr-2 text-cyan-400" />
                   <span>{doctor.phone}</span>
                 </div>
               </div>
@@ -224,11 +276,11 @@ const Doctors = () => {
               <button
                 onClick={() => handleSelectDoctor(doctor)}
                 disabled={sending && selectedDoctor?.id === doctor.id}
-                className="w-full btn-primary py-3 disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-lg font-semibold shadow-lg shadow-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-400/60 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sending && selectedDoctor?.id === doctor.id ? (
                   <span className="flex items-center justify-center">
-                    <div className="spinner mr-2"></div>
+                    <div className="spinner mr-2 border-2 border-white border-t-transparent"></div>
                     Sending...
                   </span>
                 ) : (
@@ -246,18 +298,18 @@ const Doctors = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
-            <h4 className="text-lg font-semibold text-blue-900 mb-2">
+          <div className="bg-cyan-500/10 border border-cyan-500/30 border-l-4 border-l-cyan-500 p-6 rounded-lg shadow-lg shadow-cyan-500/10">
+            <h4 className="text-lg font-semibold text-cyan-600 dark:text-cyan-400 mb-2">
               📋 How It Works
             </h4>
-            <ol className="list-decimal list-inside space-y-2 text-blue-800">
+            <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
               <li>Select a doctor from the list above</li>
               <li>Your medical report will be automatically sent to them</li>
               <li>The doctor will review your case and contact you within 24-48 hours</li>
               <li>You'll receive consultation via email or phone based on your preference</li>
             </ol>
-            <p className="mt-4 text-sm text-blue-700">
-              <strong>Note:</strong> Make sure you have generated your medical report from the Results page before consulting a doctor.
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              <strong className="text-cyan-600 dark:text-cyan-400">Note:</strong> Make sure you have generated your medical report from the Results page before consulting a doctor.
             </p>
           </div>
         </motion.div>

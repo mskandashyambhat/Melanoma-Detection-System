@@ -91,8 +91,8 @@ const Results = () => {
   if (!result) {
     return (
       <div className="container mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[40vh]">
-        <div className="spinner mx-auto border-blue-700 border-t-transparent"></div>
-        <p className="mt-4 text-gray-600 font-medium">Loading analysis results...</p>
+        <div className="spinner mx-auto border-cyan-400 border-t-transparent"></div>
+        <p className="mt-4 text-gray-700 dark:text-gray-300 font-medium">Loading analysis results...</p>
       </div>
     );
   }
@@ -104,17 +104,17 @@ const Results = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-slate-700 to-blue-700 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-500 bg-clip-text text-transparent">
           Analysis Results
         </h1>
 
         {/* Main Results Card */}
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-5 gap-8 mb-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             {/* Image Display */}
-            <div className="card md:col-span-2 bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
-              <h3 className="text-xl font-semibold mb-4 flex items-center">
-                <span className="inline-block w-2 h-2 rounded-full bg-blue-700 mr-2"></span>
+            <div className="md:col-span-1 lg:col-span-2 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-2xl shadow-cyan-500/10 p-6 hover:shadow-cyan-500/20 transition-all border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold mb-4 flex items-center text-cyan-600 dark:text-cyan-400">
+                <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 mr-2"></span>
                 Analyzed Image
               </h3>
               
@@ -126,31 +126,31 @@ const Results = () => {
                 />
                 
                 {result?.using_mock_prediction && (
-                  <div className="absolute bottom-2 right-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-md shadow-sm">
+                  <div className="absolute bottom-2 right-2 bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 text-xs px-2 py-1 rounded-md shadow-sm">
                     Demo Mode
                   </div>
                 )}
               </div>
               
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Analysis Date:</span>
-                  <span className="text-gray-800 font-medium">{new Date().toLocaleDateString()}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Analysis Date:</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-medium">{new Date().toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
 
             {/* Detection Results */}
-            <div className="card md:col-span-3 bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
-              <h3 className="text-xl font-semibold mb-4 flex items-center">
-                <span className="inline-block w-2 h-2 rounded-full bg-slate-600 mr-2"></span>
+            <div className="md:col-span-1 lg:col-span-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-2xl shadow-blue-500/10 p-6 hover:shadow-blue-500/20 transition-all border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold mb-4 flex items-center text-blue-600 dark:text-blue-400">
+                <span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-2"></span>
                 Detection Results
               </h3>
               
               <div className="space-y-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Detected Condition</label>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-blue-700 bg-clip-text text-transparent mt-1">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Detected Condition</label>
+                  <p className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-500 bg-clip-text text-transparent mt-1">
                     {result.disease}
                   </p>
                 </div>
@@ -158,22 +158,22 @@ const Results = () => {
 
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Confidence Level</label>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Confidence Level</label>
                   <div className="flex items-center mt-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-4 mr-3 overflow-hidden">
+                    <div className="flex-1 bg-gray-300 dark:bg-gray-700 rounded-full h-4 mr-3 overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${result.confidence}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
-                        className="bg-gradient-to-r from-slate-600 to-blue-700 h-4 rounded-full"
+                        className="bg-gradient-to-r from-cyan-500 to-blue-600 h-4 rounded-full shadow-lg"
                       ></motion.div>
                     </div>
-                    <span className="text-xl font-bold text-blue-700">{result.confidence}%</span>
+                    <span className="text-xl font-bold text-cyan-600 dark:text-cyan-400">{result.confidence}%</span>
                   </div>
                 </div>
 
                 <div className="mb-6">
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Severity Level</label>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-500 mb-2 block">Severity Level</label>
                   <div 
                     className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold shadow-sm ${
                       result.severity === 'Critical' ? 'bg-red-100 text-red-800 border border-red-200' :
@@ -192,36 +192,36 @@ const Results = () => {
                   </div>
                 </div>
                 
-                <div className="pt-4 border-t border-gray-100">
-                  <p className="text-gray-700 leading-relaxed">{result.description}</p>
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{result.description}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Recommendations */}
-          <div className="card mb-8 bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
-            <h3 className="text-xl font-semibold mb-6 flex items-center">
-              <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-2xl shadow-green-500/10 p-6 hover:shadow-green-500/20 transition-all border border-gray-200 dark:border-gray-700 mb-8">
+            <h3 className="text-xl font-semibold mb-6 flex items-center text-green-600 dark:text-green-400">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-400 mr-2"></span>
               Professional Recommendations
             </h3>
             
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <div className="bg-cyan-500/10 border border-cyan-500/30 p-4 rounded-lg mb-6">
               <div className="flex items-center mb-3">
-                <svg className="w-6 h-6 text-blue-700 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-cyan-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-gray-700 font-medium">Based on the analysis, we recommend the following steps:</p>
+                <p className="text-gray-800 dark:text-gray-200 font-medium">Based on the analysis, we recommend the following steps:</p>
               </div>
             </div>
             
             <ul className="grid md:grid-cols-2 gap-4">
               {result.recommendations.map((rec, index) => (
-                <li key={index} className="flex items-start bg-white border border-gray-100 rounded-lg p-4 hover:border-blue-100 hover:bg-blue-50/30 transition-colors">
-                  <div className="bg-gradient-to-r from-slate-600 to-blue-700 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 shadow-sm">
+                <li key={index} className="flex items-start bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-colors">
+                  <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 shadow-lg shadow-cyan-500/30">
                     {index + 1}
                   </div>
-                  <span className="text-gray-700">{rec}</span>
+                  <span className="text-gray-700 dark:text-gray-300">{rec}</span>
                 </li>
               ))}
             </ul>
@@ -235,42 +235,42 @@ const Results = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mb-8"
             >
-              <div className="card bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
-                <h3 className="text-xl font-semibold mb-6 flex items-center">
-                  <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-2xl shadow-purple-500/10 p-6 hover:shadow-purple-500/20 transition-all border border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-semibold mb-6 flex items-center text-purple-600 dark:text-purple-400">
+                  <span className="inline-block w-2 h-2 rounded-full bg-purple-400 mr-2"></span>
                   Melanoma Treatment Pathway
                 </h3>
                 
                 <div className="relative">
-                  <div className="absolute top-0 bottom-0 left-6 w-0.5 bg-gray-200"></div>
+                  <div className="absolute top-0 bottom-0 left-6 w-0.5 bg-gray-300 dark:bg-gray-700"></div>
                   
                   <div className="relative flex items-start mb-6">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-indigo-100 bg-indigo-50 text-indigo-600 font-bold text-lg z-10">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-cyan-500/30 bg-cyan-500/10 text-cyan-400 font-bold text-lg z-10">
                       1
                     </div>
                     <div className="ml-6">
-                      <h4 className="text-lg font-semibold text-gray-800">Diagnosis Confirmation</h4>
-                      <p className="text-gray-600 mt-1">A dermatologist will likely perform a biopsy to confirm the melanoma diagnosis and determine the exact characteristics.</p>
+                      <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Diagnosis Confirmation</h4>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">A dermatologist will likely perform a biopsy to confirm the melanoma diagnosis and determine the exact characteristics.</p>
                     </div>
                   </div>
                   
                   <div className="relative flex items-start mb-6">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-indigo-100 bg-indigo-50 text-indigo-600 font-bold text-lg z-10">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-blue-500/30 bg-blue-500/10 text-blue-400 font-bold text-lg z-10">
                       2
                     </div>
                     <div className="ml-6">
-                      <h4 className="text-lg font-semibold text-gray-800">Staging Assessment</h4>
-                      <p className="text-gray-600 mt-1">Additional tests may be conducted to confirm the exact stage, which guides treatment decisions.</p>
+                      <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Staging Assessment</h4>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">Additional tests may be conducted to confirm the exact stage, which guides treatment decisions.</p>
                     </div>
                   </div>
                   
                   <div className="relative flex items-start mb-6">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-indigo-100 bg-indigo-50 text-indigo-600 font-bold text-lg z-10">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-purple-500/30 bg-purple-500/10 text-purple-400 font-bold text-lg z-10">
                       3
                     </div>
                     <div className="ml-6">
-                      <h4 className="text-lg font-semibold text-gray-800">Treatment Plan</h4>
-                      <p className="text-gray-600 mt-1">
+                      <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Treatment Plan</h4>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">
                         {result.melanoma_stage === 1 && 'Surgery to remove the melanoma and a margin of normal skin is typically the main treatment for Stage 1.'}
                         {result.melanoma_stage === 2 && 'Wide excision surgery with potential sentinel lymph node biopsy to check if cancer has spread to lymph nodes.'}
                         {result.melanoma_stage === 3 && 'Surgery plus immunotherapy, targeted therapy, or clinical trials depending on specific characteristics.'}
@@ -280,12 +280,12 @@ const Results = () => {
                   </div>
                   
                   <div className="relative flex items-start">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-indigo-100 bg-indigo-50 text-indigo-600 font-bold text-lg z-10">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-green-500/30 bg-green-500/10 text-green-400 font-bold text-lg z-10">
                       4
                     </div>
                     <div className="ml-6">
-                      <h4 className="text-lg font-semibold text-gray-800">Follow-up Care</h4>
-                      <p className="text-gray-600 mt-1">
+                      <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Follow-up Care</h4>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">
                         {result.melanoma_stage <= 2 ? 
                           'Regular skin exams, imaging tests, and follow-up appointments to monitor for recurrence or new melanomas.' :
                           'Intensive monitoring and follow-up care with your oncology team to track response to treatment.'}
@@ -332,7 +332,7 @@ const Results = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowPatientForm(true)}
-                className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                className="flex items-center justify-center py-4 px-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-400/60 transition-all duration-300"
                 disabled={generatingReport}
               >
                 {generatingReport ? (
@@ -352,7 +352,7 @@ const Results = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleConsultDoctor}
-                className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                className="flex items-center justify-center py-4 px-8 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-lg shadow-lg shadow-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-400/60 transition-all duration-300"
               >
                 <FaUserMd className="mr-2" />
                 Consult a Specialist
@@ -367,7 +367,7 @@ const Results = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate('/')}
-                className="btn-primary flex items-center justify-center py-4 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                className="flex items-center justify-center py-4 px-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/50 hover:shadow-2xl hover:shadow-blue-400/60 transition-all duration-300"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -423,7 +423,7 @@ const Results = () => {
                       name="name"
                       value={patientInfo.name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none bg-white text-gray-900"
                       placeholder="John Doe"
                     />
                   </div>
@@ -437,7 +437,7 @@ const Results = () => {
                       name="age"
                       value={patientInfo.age}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none bg-white text-gray-900"
                       placeholder="35"
                     />
                   </div>
@@ -451,7 +451,7 @@ const Results = () => {
                     name="gender"
                     value={patientInfo.gender}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none bg-white text-gray-900"
                   >
                     <option value="">-- Select Gender --</option>
                     <option value="male">Male</option>
@@ -470,7 +470,7 @@ const Results = () => {
                       name="phone"
                       value={patientInfo.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none bg-white text-gray-900"
                       placeholder="+1-555-0123"
                     />
                   </div>
@@ -484,7 +484,7 @@ const Results = () => {
                       name="email"
                       value={patientInfo.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none bg-white text-gray-900"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -498,7 +498,7 @@ const Results = () => {
                     name="medical_history"
                     value={patientInfo.medical_history}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 outline-none bg-white text-gray-900"
                     rows="3"
                     placeholder="Any relevant medical history, allergies, or current medications..."
                   ></textarea>

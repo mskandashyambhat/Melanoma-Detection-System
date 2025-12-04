@@ -14,10 +14,14 @@ from PIL import Image
 try:
     import tensorflow as tf
     from tensorflow import keras
+    from tensorflow.keras.models import load_model
     TF_AVAILABLE = True
+    print("✅ TensorFlow imported successfully")
 except ImportError:
     print("⚠️  TensorFlow not installed. Using mock predictions.")
     TF_AVAILABLE = False
+    keras = None
+    load_model = None
     
 try:
     import cv2
@@ -28,9 +32,68 @@ except ImportError:
     
 from datetime import datetime
 import json
-from gemini_validator import validate_image_with_gemini
-from report_generator import generate_patient_report
-from chatbot_service import get_chatbot_response
+
+try:
+    from gemini_validator import validate_image_with_gemini
+    GEMINI_AVAILABLE = True
+except ImportError:
+    print("⚠️  Gemini API not available. Advanced validation disabled.")
+    GEMINI_AVAILABLE = False
+    validate_image_with_gemini = None
+
+try:
+    from report_generator import generate_patient_report
+    REPORT_GEN_AVAILABLE = True
+except ImportError:
+    print("⚠️  Report generator not available.")
+    REPORT_GEN_AVAILABLE = False
+    generate_patient_report = None
+
+try:
+    from chatbot_service import get_chatbot_response
+    CHATBOT_AVAILABLE = True
+except ImportError:
+    print("⚠️  Chatbot service not available.")
+    CHATBOT_AVAILABLE = False
+    get_chatbot_response = None
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+
+# Try to import email configuration
+try:
+    from email_config import SENDER_EMAIL, SENDER_PASSWORD, SMTP_SERVER, SMTP_PORT
+    EMAIL_CONFIGURED = True
+except ImportError:
+    print("⚠️  Email configuration not found. Email sending will be disabled.")
+    SENDER_EMAIL = None
+    SENDER_PASSWORD = None
+    SMTP_SERVER = "smtp.gmail.com"
+    SMTP_PORT = 587
+    EMAIL_CONFIGURED = False
+
+# Try to import WhatsApp configuration
+try:
+    from email_config import WHATSAPP_SENDER_NAME, REAL_DOCTOR_WHATSAPP
+    WHATSAPP_CONFIGURED = True
+    # Try to import pywhatkit (WhatsApp Web API - no extra number needed!)
+    try:
+        import pywhatkit as kit
+        PYWHATKIT_AVAILABLE = True
+        print("✅ WhatsApp integration ready (via WhatsApp Web)")
+    except ImportError:
+        print("⚠️  pywhatkit not installed. WhatsApp sending will be disabled.")
+        print("    Install with: pip install pywhatkit")
+        PYWHATKIT_AVAILABLE = False
+except ImportError:
+    print("⚠️  WhatsApp configuration not found. WhatsApp sending will be disabled.")
+    WHATSAPP_SENDER_NAME = "Melanoma Detection Lab"
+    REAL_DOCTOR_WHATSAPP = {}
+    WHATSAPP_CONFIGURED = False
+    PYWHATKIT_AVAILABLE = False
 
 app = Flask(__name__)
 CORS(app)
@@ -163,14 +226,197 @@ doctors = [
         'availability': 'Wed-Sun, 8 AM - 3 PM',
         'email': 'dr.meera@aiims.edu',
         'phone': '+91-11-3333-4444'
+    },
+    {
+        'id': 107,
+        'name': 'Dr. Shyam',
+        'specialization': 'MD Dermatology, MBBS',
+        'experience': '14 years',
+        'rating': 4.9,
+        'location': 'Digital Health Institute',
+        'availability': 'Mon-Fri, 10 AM - 6 PM',
+        'email': 'skandashyam102@gmail.com',
+        'phone': '+1-555-0107'
+    },
+    {
+        'id': 108,
+        'name': 'Dr. Kaushik',
+        'specialization': 'Surgical Oncology & Dermatology',
+        'experience': '16 years',
+        'rating': 4.8,
+        'location': 'Advanced Cancer Care',
+        'availability': 'Tue-Sat, 9 AM - 5 PM',
+        'email': 'kaushikmuliya@gmail.com',
+        'phone': '+1-555-0108'
+    },
+    {
+        'id': 109,
+        'name': 'Dr. Paavani',
+        'specialization': 'Cosmetic & Medical Dermatology',
+        'experience': '11 years',
+        'rating': 5.0,
+        'location': 'Skin Wellness Center',
+        'availability': 'Mon-Thu, 11 AM - 7 PM',
+        'email': 'kpaavani20@gmail.com',
+        'phone': '+1-555-0109'
+    },
+    {
+        'id': 110,
+        'name': 'Dr. Deepa',
+        'specialization': 'Dermatopathology & Melanoma Research',
+        'experience': '19 years',
+        'rating': 4.9,
+        'location': 'Research Dermatology Clinic',
+        'availability': 'Mon-Fri, 8 AM - 4 PM',
+        'email': 'deepamk725@gmail.com',
+        'phone': '+1-555-0110'
     }
 ]
+
+# Email configuration for real doctors
+REAL_DOCTOR_EMAILS = {
+    107: 'skandashyam102@gmail.com',
+    108: 'kaushikmuliya@gmail.com',
+    109: 'kpaavani20@gmail.com',
+    110: 'deepamk725@gmail.com'
+}
 
 
 def allowed_file(filename):
     """Check if file has an allowed extension"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def send_whatsapp_to_doctor(doctor_whatsapp, doctor_name, patient_info, report_path, consultation_id):
+    """Send WhatsApp message to doctor with consultation details via WhatsApp Web"""
+    try:
+        # Check if WhatsApp is configured
+        if not WHATSAPP_CONFIGURED or not PYWHATKIT_AVAILABLE:
+            print("⚠️  WhatsApp not configured. Skipping WhatsApp send.")
+            return False
+        
+        # Create WhatsApp message body
+        message_body = f"""🏥 *{WHATSAPP_SENDER_NAME}*
+
+*New Patient Consultation Request*
+
+*Consultation ID:* {consultation_id}
+
+*Patient Information:*
+• Name: {patient_info.get('name', 'N/A')}
+• Age: {patient_info.get('age', 'N/A')}
+• Gender: {patient_info.get('gender', 'N/A')}
+• Phone: {patient_info.get('phone', 'N/A')}
+
+*Medical History:* {patient_info.get('medical_history', 'N/A')}
+
+The detailed medical report has been sent to your email: {patient_info.get('doctor_email', 'your registered email')}
+
+Please review at your earliest convenience.
+
+_Thank you for your consultation_"""
+        
+        # Get current time and schedule message immediately (next minute)
+        from datetime import datetime
+        now = datetime.now()
+        hour = now.hour
+        minute = now.minute + 1
+        
+        # If minute is 60, adjust to next hour
+        if minute >= 60:
+            minute = 0
+            hour = (hour + 1) % 24
+        
+        # Send WhatsApp message via WhatsApp Web
+        # This will open WhatsApp Web and send the message automatically
+        kit.sendwhatmsg(
+            phone_no=doctor_whatsapp,
+            message=message_body.strip(),
+            time_hour=hour,
+            time_min=minute,
+            wait_time=15,  # Wait 15 seconds for WhatsApp Web to load
+            tab_close=True,  # Close tab after sending
+            close_time=3  # Close after 3 seconds
+        )
+        
+        print(f"✅ WhatsApp message scheduled to {doctor_name} at {hour}:{minute:02d}")
+        return True
+        
+    except Exception as e:
+        print(f"⚠️ WhatsApp sending failed: {str(e)}")
+        print(f"   Note: Make sure you're logged into WhatsApp Web in your default browser")
+        return False
+
+
+def send_email_to_doctor(doctor_email, doctor_name, patient_info, report_path, consultation_id):
+    """Send email to doctor with patient report attached"""
+    try:
+        # Check if email is configured
+        if not EMAIL_CONFIGURED or not SENDER_EMAIL or not SENDER_PASSWORD:
+            print("⚠️  Email not configured. Skipping email send.")
+            return False
+        
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = doctor_email
+        msg['Subject'] = f"New Patient Consultation Request - {consultation_id}"
+        
+        # Email body
+        body = f"""
+Dear {doctor_name},
+
+You have received a new patient consultation request through the Melanoma Detection Lab.
+
+Patient Information:
+
+Name: {patient_info.get('name', 'N/A')}
+
+Age: {patient_info.get('age', 'N/A')}
+
+Gender: {patient_info.get('gender', 'N/A')}
+
+Phone: {patient_info.get('phone', 'N/A')}
+
+Email: {patient_info.get('email', 'N/A')}
+
+Medical History: {patient_info.get('medical_history', 'N/A')}
+
+Consultation ID: {consultation_id}
+
+Please find the detailed medical report attached to this email.
+
+Your evaluation will help guide the next steps in this patient’s care.
+
+Best regards,
+Melanoma Detection Lab
+        """
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Attach report PDF if it exists
+        if os.path.exists(report_path):
+            with open(report_path, 'rb') as attachment:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(attachment.read())
+                encoders.encode_base64(part)
+                part.add_header(
+                    'Content-Disposition',
+                    f'attachment; filename= {os.path.basename(report_path)}'
+                )
+                msg.attach(part)
+        
+        # Send email
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.send_message(msg)
+        
+        return True
+    except Exception as e:
+        print(f"Email sending failed: {str(e)}")
+        return False
 
 
 def advanced_mock_prediction(img_array):
@@ -336,25 +582,45 @@ def load_models():
     global classifier_model, segmentation_model
     
     try:
-        # Load the trained binary classification model (Melanoma vs No Melanoma)
-        model_path = 'models/best_model_20251103_225237.h5'
+        # Try multiple model paths in order of preference
+        model_paths = [
+            'models/resnet50_melanoma_20251112_172626.h5',
+            'models/best_model_20251103_225237.h5',
+            '../models/hybrid_balanced_20251112_154433.h5',
+            '../models/hybrid_balanced_20251112_152820.h5'
+        ]
         
-        if os.path.exists(model_path):
-            try:
-                classifier_model = keras.models.load_model(model_path)
-                print("=" * 60)
-                print("✅ TRAINED MODEL LOADED SUCCESSFULLY")
-                print(f"   Model: {model_path}")
-                print(f"   Layers: {len(classifier_model.layers)}")
-                print(f"   Input shape: {classifier_model.input_shape}")
-                print(f"   Output shape: {classifier_model.output_shape}")
-                print("=" * 60)
-            except Exception as e:
-                print(f"❌ Error loading trained model: {e}")
-                print("⚠️  Falling back to mock predictions.")
-        else:
-            print(f"⚠️  Trained model not found at: {model_path}")
-            print("⚠️  Falling back to mock predictions.")
+        model_loaded = False
+        for model_path in model_paths:
+            if os.path.exists(model_path):
+                try:
+                    print(f"🔄 Attempting to load model: {model_path}")
+                    classifier_model = load_model(model_path, compile=False)
+                    
+                    # Recompile with binary crossentropy
+                    classifier_model.compile(
+                        optimizer='adam',
+                        loss='binary_crossentropy',
+                        metrics=['accuracy']
+                    )
+                    
+                    print("=" * 60)
+                    print("✅ TRAINED MODEL LOADED SUCCESSFULLY")
+                    print(f"   Model: {model_path}")
+                    print(f"   Layers: {len(classifier_model.layers)}")
+                    print(f"   Input shape: {classifier_model.input_shape}")
+                    print(f"   Output shape: {classifier_model.output_shape}")
+                    print("=" * 60)
+                    model_loaded = True
+                    break
+                except Exception as e:
+                    print(f"❌ Error loading {model_path}: {e}")
+                    continue
+        
+        if not model_loaded:
+            print(f"❌ NO TRAINED MODEL FOUND!")
+            print(f"   Searched paths: {model_paths}")
+            raise Exception("No trained model available")
             classifier_model = None
             
         # Create the models directory if it doesn't exist
@@ -446,22 +712,22 @@ def predict_disease(image_path):
         # If models are loaded, use them
         if classifier_model is not None:
             try:
-                # Model outputs probability for melanoma (single output neuron with sigmoid)
+                # Model outputs 2 probabilities: [Benign, Melanoma] - class_names order
                 predictions = classifier_model.predict(img_array, verbose=0)
-                melanoma_probability = float(predictions[0][0])  # Probability of melanoma
+                benign_prob = float(predictions[0][0])
+                melanoma_prob = float(predictions[0][1])
                 
-                # Binary classification: 
-                # If probability > 0.5, predict Melanoma
-                # Otherwise, predict Benign (No Melanoma)
-                if melanoma_probability > 0.5:
+                print(f"   Raw predictions - Benign: {benign_prob:.4f}, Melanoma: {melanoma_prob:.4f}")
+                
+                # Require strong confidence (>0.95) for melanoma classification to reduce false positives
+                if melanoma_prob > 0.95:
                     disease = 'Melanoma'
-                    confidence = melanoma_probability * 100
+                    confidence = melanoma_prob * 100
                 else:
                     disease = 'Benign'
-                    confidence = (1 - melanoma_probability) * 100
+                    confidence = max(benign_prob, 1 - melanoma_prob) * 100
                 
                 print(f"✅ Model prediction: {disease} ({confidence:.2f}% confidence)")
-                print(f"   Raw melanoma probability: {melanoma_probability:.4f}")
                 
             except Exception as e:
                 print(f"❌ Error during model prediction: {e}")
@@ -588,8 +854,13 @@ def validate_image():
         try:
             file.save(filepath)
             
-            # Use Gemini AI to validate the image
-            is_valid, validation_message = validate_image_with_gemini(filepath)
+            # Use Gemini AI to validate the image if available
+            if GEMINI_AVAILABLE and validate_image_with_gemini:
+                is_valid, validation_message = validate_image_with_gemini(filepath)
+            else:
+                # Skip validation if Gemini is not available
+                is_valid = True
+                validation_message = "Image uploaded successfully (AI validation unavailable)"
             
             if not is_valid:
                 # Delete the file if validation fails
@@ -780,14 +1051,69 @@ def consult_doctor():
         if not doctor:
             return jsonify({'error': 'Doctor not found'}), 404
         
-        # In a real application, this would send an email or notification
-        # For demo purposes, we'll just return success
+        consultation_id = f'CONS{datetime.now().strftime("%Y%m%d%H%M%S")}'
         
-        return jsonify({
-            'message': f'Report successfully sent to {doctor["name"]}',
-            'doctor': doctor,
-            'consultation_id': f'CONS{datetime.now().strftime("%Y%m%d%H%M%S")}'
-        }), 200
+        # Check if this doctor should receive real emails/WhatsApp
+        if doctor_id in REAL_DOCTOR_EMAILS:
+            report_path = os.path.join(app.config['REPORTS_FOLDER'], report_filename)
+            doctor_email = REAL_DOCTOR_EMAILS[doctor_id]
+            
+            # Add doctor email to patient info for WhatsApp message
+            patient_info['doctor_email'] = doctor_email
+            
+            # Send real email
+            email_sent = send_email_to_doctor(
+                doctor_email,
+                doctor['name'],
+                patient_info,
+                report_path,
+                consultation_id
+            )
+            
+            # Send WhatsApp notification if available
+            whatsapp_sent = False
+            if doctor_id in REAL_DOCTOR_WHATSAPP:
+                doctor_whatsapp = REAL_DOCTOR_WHATSAPP[doctor_id]
+                whatsapp_sent = send_whatsapp_to_doctor(
+                    doctor_whatsapp,
+                    doctor['name'],
+                    patient_info,
+                    report_path,
+                    consultation_id
+                )
+            
+            if email_sent or whatsapp_sent:
+                notification_methods = []
+                if email_sent:
+                    notification_methods.append('email')
+                if whatsapp_sent:
+                    notification_methods.append('WhatsApp')
+                
+                return jsonify({
+                    'message': f'Report successfully sent to {doctor["name"]} via {" and ".join(notification_methods)}',
+                    'doctor': doctor,
+                    'consultation_id': consultation_id,
+                    'email_sent': email_sent,
+                    'whatsapp_sent': whatsapp_sent,
+                    'notification_methods': notification_methods
+                }), 200
+            else:
+                return jsonify({
+                    'message': f'Report logged for {doctor["name"]} (delivery pending)',
+                    'doctor': doctor,
+                    'consultation_id': consultation_id,
+                    'email_sent': False,
+                    'whatsapp_sent': False,
+                    'warning': 'Email/WhatsApp configuration required'
+                }), 200
+        else:
+            # For demo doctors, just return success without sending email
+            return jsonify({
+                'message': f'Report successfully sent to {doctor["name"]}',
+                'doctor': doctor,
+                'consultation_id': consultation_id,
+                'email_sent': False
+            }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

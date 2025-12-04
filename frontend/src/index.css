@@ -10,7 +10,7 @@
   }
   
   body {
-    @apply bg-gray-50 text-gray-900 font-['Inter',sans-serif];
+    @apply bg-white dark:bg-black text-gray-900 dark:text-gray-100 font-['Inter',sans-serif];
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -20,23 +20,23 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50;
+    @apply bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50 shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-opacity-50;
   }
   
   .btn-secondary {
-    @apply bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out border border-gray-300 shadow-sm hover:shadow;
+    @apply bg-gray-800 hover:bg-gray-700 text-gray-100 font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out border border-gray-600 shadow-sm hover:shadow-lg hover:shadow-gray-800/50;
   }
   
   .btn-danger {
-    @apply bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg;
+    @apply bg-red-600 hover:bg-red-500 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-lg hover:shadow-2xl hover:shadow-red-600/50;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-lg p-6 transition duration-300 hover:shadow-xl;
+    @apply bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-2xl shadow-gray-900/50 p-6 transition duration-300 hover:shadow-cyan-500/20 border border-gray-700;
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition;
+    @apply w-full px-4 py-3 bg-gray-900 border border-gray-700 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition;
   }
   
   .badge {
@@ -46,7 +46,15 @@
 
 /* Professional gradient backgrounds */
 .gradient-bg-primary {
-  background: linear-gradient(135deg, #4F46E5 0%, #9333EA 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+}
+
+.gradient-bg-dark {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
 }
 
 .gradient-bg-secondary {

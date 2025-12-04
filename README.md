@@ -1,346 +1,410 @@
-# Melanoma Detection System 🔬
+# Melanoma Detection System
 
-An advanced AI-powered melanoma detection system using deep learning (ResNet50 + UNet) with 97%+ accuracy. This comprehensive application provides instant skin lesion analysis, detailed medical reports, and seamless doctor consultation features.
+AI-powered melanoma detection system using deep learning models with React frontend and Flask backend.
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15-orange.svg)
-![React](https://img.shields.io/badge/React-18.2-61dafb.svg)
-![Flask](https://img.shields.io/badge/Flask-3.0-black.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+## Features
 
-## 🌟 Features
+- 🔬 Advanced melanoma detection using hybrid CNN models
+- 🤖 AI-powered medical chatbot using Gemini AI
+- 📊 Comprehensive medical reports with visualizations
+- 🖼️ Image validation using Gemini AI
+- 📱 Responsive web interface
 
-### AI-Powered Detection
-- **Dual CNN Architecture**: Combines ResNet50 for classification and UNet for segmentation
-- **High Accuracy**: Achieves 97%+ accuracy in melanoma detection
-- **Multi-Class Classification**: Detects 8 different skin conditions:
-  - Melanoma
-  - Basal Cell Carcinoma
-  - Acne
-  - Ringworm
-  - Burns
-  - Eczema
-  - Psoriasis
-  - Normal/Healthy Skin
+## Prerequisites
 
-### Beautiful User Interface
-- **Modern Design**: Responsive UI built with React and Tailwind CSS
-- **Drag & Drop Upload**: Easy image upload with preview
-- **Real-time Analysis**: Instant results with confidence scores
-- **Smooth Animations**: Framer Motion for engaging user experience
+- Python 3.8+
+- Node.js 14+
+- Gemini API Key (Google AI)
 
-### Comprehensive Reporting
-- **PDF Generation**: Professional medical reports with patient information
-- **Detailed Results**: Includes diagnosis, confidence level, and recommendations
-- **Downloadable**: One-click download of complete medical reports
+## Quick Start
 
-### Doctor Consultation
-- **Expert Network**: Access to 6+ verified dermatologists and oncologists
-- **Tile-Based Display**: Beautiful doctor profiles with ratings and availability
-- **Automatic Report Sharing**: Send reports directly to selected doctors
-- **Contact Information**: Direct access to doctor emails and phone numbers
+### 1. Clone and Setup
 
-## 🏗️ Project Structure
+```bash
+git clone https://github.com/mskandashyambhat/Melanoma-Detection-System.git
+cd melanoma-detection
+```
+
+### 2. Configure Environment
+
+Create `.env` file:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and add your Gemini API key:
+```
+GEMINI_API_KEY=your_actual_api_key_here
+```
+
+**Get Gemini API Key:** Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+### 3. Deploy the Application
+
+#### Option A: Development Mode (Recommended for local testing)
+
+```bash
+./deploy.sh
+```
+
+This will:
+- ✅ Install all dependencies automatically
+- ✅ Start backend on http://localhost:5001
+- ✅ Start frontend on http://localhost:5173
+- ✅ Monitor both servers
+- ✅ Create log files for debugging
+
+#### Option B: Production Mode (For web hosting)
+
+```bash
+./deploy_production.sh
+./start_production.sh
+```
+
+This will:
+- ✅ Build optimized production bundles
+- ✅ Use Gunicorn for backend (production-ready)
+- ✅ Serve optimized frontend build
+- ✅ Configure for cloud hosting
+
+### 4. Control the Application
+
+**Check status:**
+```bash
+./status.sh
+```
+
+**Stop servers:**
+```bash
+./stop.sh
+```
+
+**View logs:**
+```bash
+# Backend logs
+tail -f backend/backend.log
+
+# Frontend logs
+tail -f frontend/frontend.log
+```
+
+## Deployment Scripts
+
+| Script | Purpose | When to Use |
+|--------|---------|-------------|
+| `deploy.sh` | Development deployment | Local development & testing |
+| `deploy_production.sh` | Production build | Preparing for web hosting |
+| `start_production.sh` | Start production servers | After running deploy_production.sh |
+| `status.sh` | Check server status | Monitoring deployment |
+| `stop.sh` | Stop all servers | Shutdown or restart |
+
+## Manual Setup (Alternative)
+
+### Backend Setup
+
+```bash
+cd backend
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start backend
+python3 app.py
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Development mode
+npm run dev
+
+# Production build
+npm run build
+npm run preview
+```
+
+## Project Structure
 
 ```
 melanoma-detection/
 ├── backend/
-│   ├── app.py                    # Flask API server
-│   ├── model_architecture.py     # CNN model definitions
-│   ├── report_generator.py       # PDF report generation
+│   ├── app.py                    # Main Flask application
+│   ├── chatbot_service.py        # AI chatbot with Gemini
+│   ├── gemini_validator.py       # Image validation
+│   ├── models/                   # Trained ML models (.h5)
+│   ├── uploads/                  # User uploaded images
+│   ├── reports/                  # Generated PDF reports
 │   ├── requirements.txt          # Python dependencies
-│   ├── models/                   # Trained model files
-│   ├── uploads/                  # Uploaded images
-│   └── reports/                  # Generated reports
+│   └── venv/                     # Virtual environment
 │
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   └── Header.jsx        # Navigation header
-    │   ├── pages/
-    │   │   ├── Home.jsx          # Image upload page
-    │   │   ├── Results.jsx       # Analysis results page
-    │   │   └── Doctors.jsx       # Doctor consultation page
-    │   ├── App.jsx               # Main app component
-    │   ├── main.jsx              # Entry point
-    │   └── index.css             # Global styles
-    ├── package.json
-    ├── vite.config.js
-    └── tailwind.config.js
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # React components
+│   │   ├── pages/               # Page components
+│   │   ├── App.jsx              # Main application
+│   │   └── config.js            # Configuration
+│   ├── dist/                    # Production build
+│   ├── package.json             # Node dependencies
+│   └── vite.config.js           # Vite configuration
+│
+├── models/                       # Additional trained models
+├── data/                         # Preprocessed datasets
+│   └── ham10000_binary/         # Binary numpy arrays
+│
+├── .env                         # Environment variables (create this!)
+├── .env.example                 # Environment template
+├── .gitignore                   # Git ignore rules
+│
+├── deploy.sh                    # Development deployment
+├── deploy_production.sh         # Production build script
+├── start_production.sh          # Production start script
+├── status.sh                    # Status checker
+├── stop.sh                      # Stop all servers
+└── README.md                    # This file
 ```
 
-## 🚀 Installation & Setup
+## Cloud Deployment
 
-### Prerequisites
-- Python 3.8 or higher
-- Node.js 16 or higher
-- npm or yarn
+### Deploy to AWS EC2, Google Cloud, DigitalOcean, etc.
 
-### Backend Setup
-
-1. **Navigate to backend directory:**
+1. **Upload project to server:**
 ```bash
-cd melanoma-detection/backend
+scp -r melanoma-detection/ user@your-server:/path/
 ```
 
-2. **Create virtual environment:**
+2. **SSH into server:**
 ```bash
-python -m venv venv
-source venv/bin/activate  # On macOS/Linux
-# OR
-venv\Scripts\activate  # On Windows
+ssh user@your-server
+cd /path/melanoma-detection
 ```
 
-3. **Install dependencies:**
+3. **Setup environment:**
 ```bash
+# Copy and configure .env
+cp .env.example .env
+nano .env  # Add your GEMINI_API_KEY
+```
+
+4. **Deploy:**
+```bash
+./deploy_production.sh
+./start_production.sh
+```
+
+5. **Configure firewall:**
+```bash
+# Allow ports (adjust based on your firewall)
+sudo ufw allow 5001/tcp
+sudo ufw allow 5173/tcp
+```
+
+### Using Docker (Optional)
+
+Create `Dockerfile` in backend:
+```dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5001", "app:app"]
+```
+
+Build and run:
+```bash
+docker build -t melanoma-backend ./backend
+docker run -d -p 5001:5001 --env-file .env melanoma-backend
+```
+
+## API Endpoints
+
+### Health Check
+```
+GET /api/health
+```
+
+### Image Analysis
+```
+POST /api/analyze
+Content-Type: multipart/form-data
+Body: image file
+
+Response: {
+  "disease": "melanoma",
+  "confidence": 0.95,
+  "severity": "high",
+  "recommendations": [...]
+}
+```
+
+### Chatbot
+```
+POST /api/chatbot
+Content-Type: application/json
+Body: {
+  "message": "What is melanoma?",
+  "context": {...}
+}
+
+Response: {
+  "response": "AI-generated response..."
+}
+```
+
+### Image Validation
+```
+POST /api/validate-image
+Content-Type: multipart/form-data
+Body: image file
+
+Response: {
+  "is_valid": true,
+  "message": "Valid skin lesion image"
+}
+```
+
+## Models
+
+The system uses:
+- **ResNet50** - Melanoma classification
+- **U-Net** - Lesion segmentation
+- **Hybrid Model** - Ensemble predictions
+- **Gemini AI** - Image validation & chatbot
+
+## Environment Variables
+
+Required in `.env` file:
+
+```bash
+# Gemini API (Required)
+GEMINI_API_KEY=your_api_key_here
+
+# Server Configuration (Optional)
+HOST=0.0.0.0
+BACKEND_PORT=5001
+FRONTEND_PORT=5173
+NODE_ENV=production
+
+# Email Configuration (Optional)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+EMAIL_ADDRESS=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+```
+
+## Troubleshooting
+
+### Backend Issues
+
+**Port already in use:**
+```bash
+./stop.sh
+# Or manually: lsof -ti:5001 | xargs kill -9
+```
+
+**Gemini API errors:**
+- Check API key in `.env`
+- Verify API quota at [Google AI Studio](https://makersuite.google.com/)
+- Ensure `python-dotenv` is installed
+
+**Models not loading:**
+- Verify `.h5` model files exist in `backend/models/`
+- Check file permissions
+- Ensure sufficient disk space
+
+**Dependencies error:**
+```bash
+cd backend
+source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-4. **Create necessary directories:**
+### Frontend Issues
+
+**Build fails:**
 ```bash
-mkdir -p models uploads reports
-```
-
-5. **Start the Flask server:**
-```bash
-python app.py
-```
-
-The backend will start on `http://localhost:5000`
-
-### Frontend Setup
-
-1. **Navigate to frontend directory:**
-```bash
-cd melanoma-detection/frontend
-```
-
-2. **Install dependencies:**
-```bash
+cd frontend
+rm -rf node_modules package-lock.json
 npm install
 ```
 
-3. **Start development server:**
+**Port 5173 in use:**
 ```bash
-npm run dev
+./stop.sh
+# Or: lsof -ti:5173 | xargs kill -9
 ```
 
-The frontend will start on `http://localhost:3000`
+### Logs
 
-## 🎯 Usage Guide
+Check logs for detailed error information:
+```bash
+# Backend
+tail -f backend/backend.log
 
-### 1. Upload Image
-- Visit the home page
-- Drag and drop or click to upload a skin lesion image
-- Supported formats: PNG, JPG, JPEG (max 16MB)
+# Frontend
+tail -f frontend/frontend.log
 
-### 2. Get Analysis
-- Click "Analyze Image" button
-- Wait for AI processing (usually takes 2-3 seconds)
-- View detailed results including:
-  - Detected condition
-  - Confidence level
-  - Severity rating
-  - Medical description
-  - Recommendations
+# Check status
+./status.sh
+```
 
-### 3. Generate Report
-- Click "Download Report" button
-- Fill in patient information form:
-  - Full name
-  - Age and gender
-  - Contact details
-  - Medical history (optional)
-- Click "Generate Report"
-- PDF report will be automatically downloaded
-
-### 4. Consult a Doctor
-- Click "Consult a Doctor" button
-- Browse through available doctors
-- View doctor profiles with:
-  - Specialization and experience
-  - Ratings and reviews
-  - Location and availability
-  - Contact information
-- Click "Send Report & Consult" to share your report with selected doctor
-
-## 🧠 Model Architecture
-
-### ResNet50 Classifier
-- **Base Model**: Pre-trained ResNet50 on ImageNet
-- **Fine-tuning**: Last 20 layers unfrozen for domain adaptation
-- **Data Augmentation**: Random flips, rotations, zoom, and contrast
-- **Classification Head**: 
-  - Global Average Pooling
-  - Dense layers (512 → 256 → 128)
-  - Batch Normalization and Dropout
-  - Softmax output (8 classes)
-
-### UNet Segmentation
-- **Architecture**: Classic UNet with skip connections
-- **Encoder**: 4 downsampling blocks (64 → 128 → 256 → 512)
-- **Bridge**: 1024 filters
-- **Decoder**: 4 upsampling blocks with concatenation
-- **Output**: Binary segmentation mask
-
-### Training Configuration
-- **Optimizer**: Adam (learning rate: 0.0001)
-- **Loss Functions**:
-  - Categorical Crossentropy (classifier)
-  - Binary Crossentropy (segmentation)
-- **Metrics**: Accuracy, Precision, Recall, AUC, IoU
-- **Callbacks**: Early Stopping, Learning Rate Reduction, Model Checkpointing
-
-## 📊 API Endpoints
-
-### `GET /`
-Health check and API information
-
-### `POST /predict`
-Upload image for analysis
-- **Body**: `multipart/form-data` with `image` file
-- **Response**: Prediction results with confidence scores
-
-### `POST /generate-report`
-Generate PDF medical report
-- **Body**: JSON with patient info and prediction data
-- **Response**: Report download URL
-
-### `GET /download-report/<filename>`
-Download generated report
-- **Response**: PDF file
-
-### `GET /doctors`
-Get list of available doctors
-- **Response**: Array of doctor objects
-
-### `POST /consult-doctor`
-Send report to selected doctor
-- **Body**: JSON with doctor_id, report_filename, patient_info
-- **Response**: Consultation confirmation
-
-## 🎨 Technologies Used
+## Performance Optimization
 
 ### Backend
-- **Flask**: Web framework
-- **TensorFlow/Keras**: Deep learning models
-- **ReportLab**: PDF generation
-- **OpenCV**: Image processing
-- **NumPy**: Numerical computations
-- **Pillow**: Image manipulation
+- Uses Gunicorn with 4 workers in production
+- TensorFlow optimized for inference
+- Image preprocessing with OpenCV
 
 ### Frontend
-- **React**: UI framework
-- **React Router**: Navigation
-- **Tailwind CSS**: Styling
-- **Framer Motion**: Animations
-- **Axios**: HTTP client
-- **React Icons**: Icon library
-- **React Toastify**: Notifications
-- **Vite**: Build tool
+- Vite for fast builds
+- Code splitting and lazy loading
+- Optimized production bundle
 
-## ⚠️ Important Disclaimer
+## Security Notes
 
-This application is designed for **preliminary screening purposes only** and should NOT replace professional medical diagnosis. Always consult with a qualified healthcare provider for proper evaluation, diagnosis, and treatment. Early detection and professional medical advice are crucial for managing skin conditions effectively.
+- ✅ `.env` file is in `.gitignore` (never committed)
+- ✅ API keys stored in environment variables
+- ✅ CORS configured for security
+- ✅ Input validation on all endpoints
+- ⚠️  Change default ports for production
+- ⚠️  Use HTTPS in production (nginx/Apache reverse proxy)
+- ⚠️  Set up proper firewall rules
 
-## 🔒 Privacy & Security
+## Contributing
 
-- All uploaded images are stored locally and not shared with third parties
-- Patient information is kept confidential
-- Reports are generated locally and can be deleted after download
-- HTTPS recommended for production deployment
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
-## 🚧 Future Enhancements
+## License
 
-- [ ] Real-time video analysis
-- [ ] Mobile app (iOS/Android)
-- [ ] Integration with Electronic Health Records (EHR)
-- [ ] Telemedicine video consultation
-- [ ] Multi-language support
-- [ ] Appointment scheduling system
-- [ ] Patient history tracking
-- [ ] Email notification system
+MIT License - see LICENSE file for details
 
-## 📝 Training Your Own Model
+## Support
 
-To train the model on your own dataset:
+For issues and questions:
+- GitHub Issues: [Create an issue](https://github.com/mskandashyambhat/Melanoma-Detection-System/issues)
+- Email: support@example.com
 
-1. Prepare your dataset with proper folder structure:
-```
-dataset/
-├── train/
-│   ├── melanoma/
-│   ├── acne/
-│   └── ...
-└── validation/
-    ├── melanoma/
-    ├── acne/
-    └── ...
-```
+## Authors
 
-2. Create a training script:
-```python
-from model_architecture import MelanomaDetectionModel
+- **Skanda Shyam Bhat M** - *Initial work* - [mskandashyambhat](https://github.com/mskandashyambhat)
 
-# Initialize model
-model_builder = MelanomaDetectionModel()
-classifier, segmentation = model_builder.build_combined_model()
-classifier, segmentation = model_builder.compile_models(classifier, segmentation)
+## Acknowledgments
 
-# Train classifier
-history = classifier.fit(
-    train_generator,
-    validation_data=val_generator,
-    epochs=100,
-    callbacks=model_builder.get_callbacks()
-)
-
-# Save model
-classifier.save('models/classifier_model.h5')
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👨‍💻 Developer
-
-Created with ❤️ for improving early skin cancer detection and saving lives.
-
-## 🆘 Support
-
-For issues, questions, or contributions:
-- Open an issue on GitHub
-- Contact: [Your email]
-
-## 🙏 Acknowledgments
-
-- TensorFlow and Keras teams for excellent deep learning frameworks
-- Medical professionals who provided guidance on skin condition classification
-- Open-source community for amazing libraries and tools
-
----
-
-**Note**: This is a demonstration project. For production use, ensure proper model training on validated medical datasets and obtain necessary regulatory approvals.
-
-## 📸 Screenshots
-
-### Home Page - Image Upload
-Beautiful drag-and-drop interface for easy image upload.
-
-### Results Page - Analysis
-Comprehensive analysis results with confidence scores and recommendations.
-
-### Doctor Consultation
-Browse and select from expert dermatologists for professional consultation.
-
-### Medical Report
-Professional PDF reports with complete patient information and analysis results.
-
----
-
-**Stay healthy! Early detection saves lives. 🎗️**
+- HAM10000 Dataset for training data
+- Google Gemini AI for image validation and chatbot
+- TensorFlow/Keras for deep learning framework
+- React and Vite for frontend framework

@@ -1,48 +1,48 @@
 #!/bin/bash
 
-# Melanoma Detection Backend Startup Script
+# Backend Startup Script for Melanoma Detection System
 
-echo "=================================="
-echo "Melanoma Detection System Backend"
-echo "=================================="
+echo "=========================================="
+echo "     STARTING MELANOMA DETECTION API     "
+echo "=========================================="
+echo ""
 
-# Navigate to backend directory
-cd "$(dirname "$0")"
+# Get the backend directory
+BACKEND_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+echo "Backend Directory: $BACKEND_DIR"
+echo ""
 
 # Check if virtual environment exists
 if [ ! -d "venv" ]; then
-    echo "⚠️  Virtual environment not found."
-    echo "Creating virtual environment..."
-    python3 -m venv venv
-    echo "✅ Virtual environment created"
+    echo "❌ Virtual environment not found!"
+    echo "   Please run setup first."
+    exit 1
 fi
 
 # Activate virtual environment
-echo "Activating virtual environment..."
+echo "🔧 Activating virtual environment..."
 source venv/bin/activate
 
 # Check if requirements are installed
-if [ ! -f "venv/.requirements_installed" ]; then
-    echo "Installing requirements..."
+echo "📦 Checking dependencies..."
+python3 -c "import flask, tensorflow, cv2, PIL, google.generativeai, reportlab" 2>/dev/null
+if [ $? -ne 0 ]; then
+    echo "❌ Dependencies not installed!"
+    echo "   Installing requirements..."
     pip install -r requirements.txt
-    touch venv/.requirements_installed
-    echo "✅ Requirements installed"
-else
-    echo "✅ Requirements already installed"
 fi
 
-# Check if model exists
-if [ -f "models/best_model_20251103_225237.h5" ]; then
-    echo "✅ Trained model found"
-else
-    echo "⚠️  Trained model not found at models/best_model_20251103_225237.h5"
-    echo "   The system will use mock predictions."
-fi
+# Set environment variables
+export FLASK_APP=app.py
+export FLASK_ENV=development
+export FLASK_DEBUG=1
 
+# Start the Flask application
 echo ""
-echo "Starting Flask server on http://localhost:5001"
-echo "=================================="
+echo "🚀 Starting Flask API server on port 5001..."
+echo "   API will be available at: http://localhost:5001"
+echo "   Press Ctrl+C to stop the server"
 echo ""
 
-# Start the Flask app
-python app.py
+python3 app.py

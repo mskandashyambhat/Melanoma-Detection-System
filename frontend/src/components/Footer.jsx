@@ -3,12 +3,12 @@ import { FaGithub, FaHeart } from 'react-icons/fa';
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-r from-slate-700 to-blue-800 text-white py-8 mt-auto">
+    <footer className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 py-8 mt-auto">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-sm">
-              Designed @2025 by M Skanda Shyam Bhat, Deepasree K, Kaushik, Paavani K
+              Designed @2025 by <span className="text-cyan-600 dark:text-cyan-400 font-medium">M Skanda Shyam Bhat</span>, Deepasree K, Kaushik, Paavani K
             </p>
           </div>
           
@@ -17,9 +17,9 @@ const Footer = () => {
               href="https://github.com/mskandashyambhat/Melanoma-Detection-System" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center text-sm hover:text-blue-200 transition-colors"
+              className="flex items-center text-sm hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors group"
             >
-              <FaGithub className="mr-2" />
+              <FaGithub className="mr-2 group-hover:scale-110 transition-transform" />
               View on GitHub
             </a>
           </div>
